@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * @file
+ * Contains webform_prepopulate.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function webform_prepopulate_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the webform_prepopulate module.
+    case 'help.page.webform_prepopulate':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Pre-populate a Drupal Webform with an external data source without disclosing information in the URL.') . '</p>';
+      return $output;
+
+    default:
+  }
+}

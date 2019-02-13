@@ -1,0 +1,4 @@
+'edit webform prepopulate':
+  title: 'Edit webform prepopulate'
+  description: 'Editing webform prepopulate allows users to upload a list of users for prepopulating anonymously a Webform.'
+  restrict access: true
