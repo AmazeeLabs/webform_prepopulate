@@ -132,3 +132,26 @@ function _webform_prepopulate_settings_validate($form, FormStateInterface &$form
     }
   }
 }
+
+/**
+ * Implements hook_webform_submission_form_alter().
+ *
+ * Prepopulates if the hash is found in the storage.
+ */
+function webform_prepopulate_webform_submission_form_alter(array &$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  $hash = \Drupal::request()->query->get('hash');
+  if (!empty($hash) && !empty($form['#webform_id'])) {
+    /** @var \Drupal\webform_prepopulate\WebformPrepopulateStorage $webformPrepopulateStorage */
+    $webformPrepopulateStorage = \Drupal::service('webform_prepopulate.storage');
+    $values = $webformPrepopulateStorage->getDataFromHash($hash, $form['#webform_id']);
+    // Retain only Webform elements that have the same keys.
+    $intersectKeys = array_intersect_key($values, $form['elements']);
+    foreach ($intersectKeys as $elementKey => $elementValue) {
+      // Override only if the form element default value is empty.
+      if (empty($form['elements'][$elementKey]['#default_value'])) {
+        $form['elements'][$elementKey]['#default_value'] = $values[$elementKey];
+      }
+    }
+  }
+
+}

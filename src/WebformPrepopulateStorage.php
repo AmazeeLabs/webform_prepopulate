@@ -302,4 +302,25 @@ class WebformPrepopulateStorage {
     $file->delete();
   }
 
+  /**
+   * Returns the data associated to a hash.
+   *
+   * @param string $hash
+   * @param string $webform_id
+   *
+   * @return array
+   */
+  public function getDataFromHash($hash, $webform_id) {
+    $result = [];
+    $query = $this->connection->select('webform_prepopulate', 'wp');
+    $query->condition('wp.hash', $hash)
+          ->condition('wp.webform_id', $webform_id);
+    $query->fields('wp', ['data']);
+    $data = $query->execute()->fetchField();
+    if ($data) {
+      $result = unserialize($data);
+    }
+    return $result;
+  }
+
 }
