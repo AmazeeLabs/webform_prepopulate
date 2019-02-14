@@ -1,0 +1,7 @@
+'webform.webform.*.third_party.webform_prepopulate':
+  type: mapping
+  label: Webform Prepopulate
+  mapping:
+    form_prepopulate_enable_file:
+      type: boolean
+      label: 'Use a file to prepopulate'

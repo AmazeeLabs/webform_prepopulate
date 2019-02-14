@@ -1,0 +1,4 @@
+services:
+  webform_prepopulate.storage:
+    class: Drupal\webform_prepopulate\WebformPrepopulateStorage
+    arguments: ['@entity_type.manager', '@database']
