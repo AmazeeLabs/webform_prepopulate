@@ -9,6 +9,8 @@ use Drupal\file\Entity\File;
 
 /**
  * Class WebformPrepopulateStorage.
+ *
+ * @todo refactor and allow other inputs (XLS, ...).
  */
 class WebformPrepopulateStorage {
 
@@ -29,11 +31,37 @@ class WebformPrepopulateStorage {
   protected $database;
 
   /**
+   * CSV delimiter.
+   *
+   * @var string
+   */
+  private $delimiter;
+
+  /**
    * Constructs a new WebformPrepopulateStorage object.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, Connection $database) {
     $this->entityTypeManager = $entity_type_manager;
     $this->database = $database;
+    $this->delimiter = ',';
+  }
+
+  /**
+   * Returns the CSV delimiter.
+   *
+   * @return string
+   */
+  public function getDelimiter() {
+    return $this->delimiter;
+  }
+
+  /**
+   * Sets the CSV delimiter.
+   *
+   * @param string $delimiter
+   */
+  public function setDelimiter($delimiter) {
+    $this->delimiter = $delimiter;
   }
 
   /**
@@ -52,17 +80,42 @@ class WebformPrepopulateStorage {
   /**
    * Checks if the file header has valid Webform element keys.
    *
+   * Currently just assuming that an single intersection of
+   * header keys and form elements keys is valid.
+   *
    * @todo additionally, checks if the datatype is valid.
    *
-   * @param $webform_id
+   * @param string $webform_id
    * @param \Drupal\file\Entity\File $file
    *
    * @return bool
    */
   private function validateWebformSchema($webform_id, File $file) {
-    // @todo implement.
-    $result = TRUE;
-    $header = $this->getFileHeader($file);
+    return !empty($this->getWebformKeysFromFile($webform_id, $file));
+  }
+
+  /**
+   * Gets the intersection between header keys and form elements keys.
+   *
+   * @param string $webform_id
+   * @param \Drupal\file\Entity\File $file
+   *
+   * @return array
+   */
+  private function getWebformKeysFromFile($webform_id, File $file) {
+    $result = [];
+    try {
+      /** @var \Drupal\webform\WebformEntityStorage $webformStorage */
+      $webformStorage = $this->entityTypeManager->getStorage('webform');
+      /** @var \Drupal\webform\Entity\Webform $webform */
+      $webform = $webformStorage->load($webform_id);
+      $header = $this->getFileHeader($file);
+      $webformElements = array_keys($webform->getElementsDecoded());
+      $result = array_intersect($header, $webformElements);
+    }
+    catch (\Throwable $exception) {
+      \Drupal::messenger()->addError($exception->getMessage());
+    }
     return $result;
   }
 
@@ -76,9 +129,39 @@ class WebformPrepopulateStorage {
    * @return array
    */
   private function getFileHeader(File $file) {
-    // @todo implement.
     $result = [];
+    /** @var \Generator $generator */
+    $generator = $this->readFileByLines($file, 1);
+    if($headerLine = $generator->current()){
+       $result = explode($this->getDelimiter(), $headerLine);
+    }
     return $result;
+  }
+
+  /**
+   * Reads a file by line using a generator.
+   *
+   * @param \Drupal\file\Entity\File $file
+   * @param int $limit
+   *
+   * @return \Generator
+   */
+  private function readFileByLines(File $file, $limit = 0) {
+    if (($handle = fopen($file->getFileUri(), 'rb')) !== FALSE) {
+      if ($limit === 0) {
+        while(($line = fgets($handle)) !== FALSE) {
+          yield rtrim($line, "\r\n");
+        }
+      }
+      else {
+        $countLine = 0;
+        while(($line = fgets($handle)) !== FALSE && $countLine < $limit) {
+          yield rtrim($line, "\r\n");
+          ++$countLine;
+        }
+      }
+      fclose($handle);
+    }
   }
 
   /**
