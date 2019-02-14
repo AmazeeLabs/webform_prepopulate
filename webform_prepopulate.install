@@ -1,0 +1,56 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the Webform Prepopulate module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function webform_prepopulate_uninstall() {
+  // @todo delete configuration
+  // @see config/schema
+}
+
+/**
+ * Implements hook_schema().
+ */
+function webform_prepopulate_schema() {
+  $schema['webform_prepopulate'] = [
+    'description' => 'Stores Webform Prepopulate data.',
+    'fields' => [
+      'webform_id' => [
+        'description' => 'The Webform id.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+      ],
+      'hash' => [
+        'description' => 'Hash to get the prepopulated data.',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+      ],
+      'data' => [
+        'description' => 'Serialized data.',
+        'type' => 'blob',
+        'size' => 'big',
+        'not null' => TRUE,
+        'serialize' => TRUE,
+      ],
+      'timestamp' => [
+        'description' => 'Unix timestamp.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['webform_id', 'hash'],
+    // @todo review indexes
+    'indexes' => [
+      'webform_id' => ['webform_id'],
+    ],
+  ];
+  return $schema;
+}

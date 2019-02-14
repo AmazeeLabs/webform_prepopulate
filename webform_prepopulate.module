@@ -73,6 +73,7 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
     ],
     '#weight' => ++$form_prepopulate_weight,
   ];
+  // @todo add option to set the delimiter.
 
   $form['#entity_builders'][] = '_webform_prepopulate_webform_settings_add_form_builder';
   $form['#validate'][] = '_webform_prepopulate_settings_validate';
@@ -122,6 +123,7 @@ function _webform_prepopulate_settings_validate($form, FormStateInterface &$form
         $webform_entity = $form_object->getEntity();
         /** @var \Drupal\webform_prepopulate\WebformPrepopulateStorage $webformPrepopulateStorage */
         $webformPrepopulateStorage = \Drupal::service('webform_prepopulate.storage');
+        $webformPrepopulateStorage->setDelimiter(',');
         $webformPrepopulateStorage->persistWebformDataFromFile($prepopulate_file[0], $webform_entity->id());
       }
     }

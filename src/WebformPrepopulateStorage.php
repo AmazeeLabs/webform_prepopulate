@@ -24,11 +24,11 @@ class WebformPrepopulateStorage {
   protected $entityTypeManager;
 
   /**
-   * Drupal\Core\Database\Driver\sqlite\Connection definition.
+   * Drupal\Core\Database\Connection definition.
    *
-   * @var \Drupal\Core\Database\Driver\sqlite\Connection
+   * @var \Drupal\Core\Database\Connection
    */
-  protected $database;
+  protected $connection;
 
   /**
    * CSV delimiter.
@@ -40,9 +40,9 @@ class WebformPrepopulateStorage {
   /**
    * Constructs a new WebformPrepopulateStorage object.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, Connection $database) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, Connection $connection) {
     $this->entityTypeManager = $entity_type_manager;
-    $this->database = $database;
+    $this->connection = $connection;
     $this->delimiter = ',';
   }
 
@@ -65,15 +65,22 @@ class WebformPrepopulateStorage {
   }
 
   /**
-   * Deletes entries from the database.
+   * Deletes entries from the database for a Webform.
    *
-   * @param $webform_id
+   * @param string $webform_id
    *
    * @return bool
    */
   private function deleteWebformData($webform_id) {
-    // @todo implement.
     $result = TRUE;
+    try {
+      $this->connection->delete('webform_prepopulate')
+        ->condition('webform_id', $webform_id)->execute();
+    }
+    catch (\Throwable $exception) {
+      $result = FALSE;
+      \Drupal::messenger()->addError($exception->getMessage());
+    }
     return $result;
   }
 
@@ -165,24 +172,106 @@ class WebformPrepopulateStorage {
   }
 
   /**
-   * Save File into the database.
+   * Saves a file into the database.
    *
-   * @param $webform_id
+   * @param string $webform_id
    * @param \Drupal\file\Entity\File $file
    *
    * @return bool
    */
   private function saveFileData($webform_id, File $file) {
-    // @todo implement.
-    $result = TRUE;
+    // @todo define a strategy for small / big files with yield, batch, multiple inserts.
+    $header = $this->getFileHeader($file);
+    // @todo exception for several columns.
+    $hashColumn = array_search('hash', array_map('strtolower', $header));
+
+    // Fail if there is no hash column.
+    if (!is_int($hashColumn)) {
+      \Drupal::messenger()->addError($this->t('Your file should have a <em>hash</em> column.'));
+      return FALSE;
+    }
+
+    // Remove any existing data.
+    $this->deleteWebformData($webform_id);
+
+    // Serialize with column keys / values.
+    $inserted = 0;
+    $lines = 0;
+    foreach($this->readFileByLines($file) as $line) {
+      // @todo exclude header in a more elegant way.
+      if($lines > 0) {
+        $lineValues = explode($this->getDelimiter(), $line);
+        $hash = $lineValues[$hashColumn];
+        // Remove the hash from the column and values
+        // it does not need to be stored with the other serialized values.
+        unset($header[$hashColumn]);
+        unset($lineValues[$hashColumn]);
+        // Remove then the keys before re-indexing.
+        $indexedLine = $this->indexLineByColumns(array_values($header), array_values($lineValues));
+        try {
+          if(
+            $this->connection->insert('webform_prepopulate')->fields([
+              'webform_id' => $webform_id,
+              'hash' => $hash,
+              'data' => serialize($indexedLine),
+              'timestamp' => \Drupal::time()->getRequestTime(),
+            ])->execute()
+          ) {
+            ++$inserted;
+          }
+        }
+        catch (\Throwable $exception) {
+          // This will allow to fail early in case of duplicate hash.
+          \Drupal::messenger()->addError($exception->getMessage());
+          return FALSE;
+        }
+      }
+      ++$lines;
+    }
+    // Remove the header from the comparison.
+    return $inserted === $lines - 1;
+  }
+
+  /**
+   * Indexes the line values before serialization.
+   *
+   * @param array $header
+   * @param array $line_values
+   *
+   * @return array
+   */
+  private function indexLineByColumns(array $header, array $line_values) {
+    $result = [];
+    // Check if there is a mismatch between header and columns.
+    if (count($header) !== count($line_values)) {
+      // Make then a slower key / value assignment.
+      $count = 0;
+      foreach ($header as $column) {
+        if (isset($line_values[$count])) {
+          $result[$column] = trim($line_values[$count]);
+        }
+        ++$count;
+      }
+      // And warn the user about this line.
+      \Drupal::messenger()->addWarning($this->t('The line @line does not match the header columns, it has still been imported but might lead to prepopulate issues.', [
+        '@line' => implode($this->getDelimiter(), $line_values),
+      ]));
+    }
+    else {
+      $count = 0;
+      while(count($header) > $count) {
+        $result[$header[$count]] = trim($line_values[$count]);
+        ++$count;
+      }
+    }
     return $result;
   }
 
   /**
    * Persists a file in the database.
    *
-   * @param $fid
-   * @param $webform_id
+   * @param int $fid
+   * @param string $webform_id
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
@@ -201,13 +290,12 @@ class WebformPrepopulateStorage {
 
     if (
       $this->validateWebformSchema($webform_id, $file) &&
-      $this->deleteWebformData($webform_id) &&
       $this->saveFileData($webform_id, $file)
     ) {
       \Drupal::messenger()->addMessage($this->t('The file has been saved into the database.'));
     }
     else {
-      \Drupal::messenger()->addError($this->t('There was and error while saving the file into the database.'));
+      \Drupal::messenger()->addError($this->t('There was and error while saving the prepopulate file into the database.'));
     }
 
     // Always delete the file.
