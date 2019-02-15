@@ -29,6 +29,13 @@ class PrepopulateListForm extends FormBase {
   protected $dateFormatter;
 
   /**
+   * The current Webform entity.
+   *
+   * @var \Drupal\webform\Entity\Webform
+   */
+  private $webform;
+
+  /**
    * Constructs a new WebformPrepopulateController object.
    *
    * @param \Drupal\webform_prepopulate\WebformPrepopulateStorage
@@ -39,6 +46,7 @@ class PrepopulateListForm extends FormBase {
   public function __construct(WebformPrepopulateStorage $webform_prepopulate_storage, DateFormatterInterface $date_formatter) {
     $this->webformPrepopulateStorage = $webform_prepopulate_storage;
     $this->dateFormatter = $date_formatter;
+    $this->webform = \Drupal::requestStack()->getCurrentRequest()->attributes->get('webform');
   }
 
   /**
@@ -62,7 +70,6 @@ class PrepopulateListForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $webform_id = 'contact'; // @todo get webform
     $search = $this->getRequest()->get('hash');
     $form['#attributes'] = ['class' => ['search-form']];
 
@@ -99,7 +106,7 @@ class PrepopulateListForm extends FormBase {
     ];
 
     $rows = [];
-    $results = $this->webformPrepopulateStorage->listData($webform_id, $header, $search);
+    $results = $this->webformPrepopulateStorage->listData($this->webform->id(), $header, $search);
     foreach ($results as $result) {
       $row = [];
       $row['hash'] = $result->hash;
@@ -110,8 +117,7 @@ class PrepopulateListForm extends FormBase {
       //if ($this->entityTypeManager->getAccessControlHandler('webform')->...)) {
       $operations['view'] = [
         'title' => $this->t('Prepopulate'),
-        // @todo get webform link.
-        'url' => Url::fromUserInput('/'),
+        'url' => Url::fromRoute('entity.webform.canonical', ['webform' => $this->webform->id()], ['query' => ['hash' => $result->hash]]),
       ];
       $row['operations'] = [
         'data' => [
@@ -138,12 +144,11 @@ class PrepopulateListForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    // @todo get webform
     if ($form_state->getTriggeringElement()['#action'] == 'filter') {
-      //$form_state->setRedirect('entity.webform_prepopulate.prepopulate_form', [], ['query' => ['search' => trim($form_state->getValue('filter'))]]);
+      $form_state->setRedirect('entity.webform_prepopulate.prepopulate_form', ['webform' => $this->webform->id()], ['query' => ['search' => trim($form_state->getValue('filter'))]]);
     }
     else {
-      //$form_state->setRedirect('entity.webform_prepopulate.prepopulate_form');
+      $form_state->setRedirect('entity.webform_prepopulate.prepopulate_form', ['webform' => $this->webform->id()]);
     }
   }
 
