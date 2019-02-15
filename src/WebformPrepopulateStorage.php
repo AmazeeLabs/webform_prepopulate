@@ -2,6 +2,7 @@
 
 namespace Drupal\webform_prepopulate;
 
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Database\Driver\sqlite\Connection;
 use Drupal\Core\Link;
@@ -208,8 +209,11 @@ class WebformPrepopulateStorage {
         // it does not need to be stored with the other serialized values.
         unset($header[$hashColumn]);
         unset($lineValues[$hashColumn]);
-        // Remove then the keys before re-indexing.
-        $indexedLine = $this->indexLineByColumns(array_values($header), array_values($lineValues));
+        // Remove then the keys and sanitize before re-indexing.
+        $indexedLine = $this->indexLineByColumns(
+          $this->arrayProcessPlainText(array_values($header)),
+          $this->arrayProcessPlainText(array_values($lineValues))
+        );
         try {
           if(
             $this->connection->insert('webform_prepopulate')->fields([
@@ -232,6 +236,23 @@ class WebformPrepopulateStorage {
     }
     // Remove the header from the comparison.
     return $inserted === $lines - 1;
+  }
+
+  /**
+   * Returns trimmed plain text values from an array.
+   *
+   * @todo nested arrays.
+   *
+   * @param array $values
+   *
+   * @return array
+   */
+  private function arrayProcessPlainText(array $values) {
+    $result = [];
+    foreach ($values as $value) {
+      $result[] = trim(Html::escape($value));
+    }
+    return $result;
   }
 
   /**
