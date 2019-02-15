@@ -336,7 +336,7 @@ class WebformPrepopulateStorage {
    *
    * @return array
    */
-  public function listData($webform_id, $header, $search) {
+  public function listData($webform_id, $header, $search = '') {
     $query = $this->connection
       ->select('webform_prepopulate', 'wp')
       ->condition('wp.webform_id', $webform_id)
@@ -346,8 +346,8 @@ class WebformPrepopulateStorage {
       ->limit(25) // @todo set limit.
       ->fields('wp');
 
-    if ($search) {
-      // @todo add LIKE
+    if (!empty($search)) {
+      $query->condition('hash', "%" . $this->connection->escapeLike($search) . "%", 'LIKE');
     }
     $result = $query->execute()->fetchAll();
     return $result;

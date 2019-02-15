@@ -71,7 +71,7 @@ class PrepopulateListForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $search = $this->getRequest()->get('hash');
+    $search = $this->getRequest()->get('search');
     $form['#attributes'] = ['class' => ['search-form']];
 
     $form['basic'] = [
@@ -81,7 +81,7 @@ class PrepopulateListForm extends FormBase {
     ];
     $form['basic']['filter'] = [
       '#type' => 'textfield',
-      '#title' => '',
+      '#title' => $this->t('Search hash containing'),
       '#default_value' => $search,
       '#maxlength' => 64,
       '#size' => 25,
@@ -148,7 +148,11 @@ class PrepopulateListForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     if ($form_state->getTriggeringElement()['#action'] == 'filter') {
-      $form_state->setRedirect('webform_prepopulate.prepopulate_list_form', ['webform' => $this->webform->id()], ['query' => ['search' => trim($form_state->getValue('filter'))]]);
+      $search = trim($form_state->getValue('filter'));
+      \Drupal::messenger()->addMessage($this->t('Searching for <em>@search</em>', [
+        '@search' => $search,
+      ]));
+      $form_state->setRedirect('webform_prepopulate.prepopulate_list_form', ['webform' => $this->webform->id()], ['query' => ['search' => $search]]);
     }
     else {
       $form_state->setRedirect('webform_prepopulate.prepopulate_list_form', ['webform' => $this->webform->id()]);
