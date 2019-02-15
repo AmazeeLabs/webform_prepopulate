@@ -2,6 +2,7 @@
 
 namespace Drupal\webform_prepopulate\Controller;
 
+use Drupal\Core\Url;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\webform\Entity\Webform;
 
@@ -20,10 +21,17 @@ class WebformPrepopulateController extends ControllerBase {
    */
   public function getDataOperations(Webform $webform) {
     // @todo check the mapping of the columns (elements could have been deleted after import)
-    // @todo add delete operation for the file.
     $form_class = \Drupal\webform_prepopulate\Form\PrepopulateListForm::class;
     return [
       'prepopulate_list_form' =>  \Drupal::formBuilder()->getForm($form_class),
+      'delete_link' => [
+        '#type' => 'link',
+        '#title' => $this->t('Delete prepopulate data'),
+        '#attributes' => [
+          'class' => ['button', 'button--danger'],
+        ],
+        '#url' => Url::fromRoute('webform_prepopulate.delete_form', ['webform' => $webform->id()])
+      ],
     ];
   }
 

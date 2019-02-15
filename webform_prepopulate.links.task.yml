@@ -1,5 +1,5 @@
-entity.webform_prepopulate.prepopulate_form:
+webform_prepopulate.prepopulate_form:
   title: 'Pre-populate'
-  route_name: entity.webform_prepopulate.prepopulate_form
+  route_name: webform_prepopulate.prepopulate_form
   parent_id: entity.webform.edit_form
   weight: 30

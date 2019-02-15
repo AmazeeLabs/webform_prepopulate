@@ -82,7 +82,7 @@ class PrepopulateListForm extends FormBase {
       '#type' => 'textfield',
       '#title' => '',
       '#default_value' => $search,
-      '#maxlength' => 128,
+      '#maxlength' => 64,
       '#size' => 25,
     ];
     $form['basic']['submit'] = [
@@ -145,10 +145,10 @@ class PrepopulateListForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     if ($form_state->getTriggeringElement()['#action'] == 'filter') {
-      $form_state->setRedirect('entity.webform_prepopulate.prepopulate_form', ['webform' => $this->webform->id()], ['query' => ['search' => trim($form_state->getValue('filter'))]]);
+      $form_state->setRedirect('webform_prepopulate.prepopulate_form', ['webform' => $this->webform->id()], ['query' => ['search' => trim($form_state->getValue('filter'))]]);
     }
     else {
-      $form_state->setRedirect('entity.webform_prepopulate.prepopulate_form', ['webform' => $this->webform->id()]);
+      $form_state->setRedirect('webform_prepopulate.prepopulate_form', ['webform' => $this->webform->id()]);
     }
   }
 

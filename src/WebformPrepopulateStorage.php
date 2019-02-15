@@ -71,7 +71,7 @@ class WebformPrepopulateStorage {
    *
    * @return bool
    */
-  private function deleteWebformData($webform_id) {
+  public function deleteWebformData($webform_id) {
     $result = TRUE;
     try {
       $this->connection->delete('webform_prepopulate')
@@ -97,7 +97,7 @@ class WebformPrepopulateStorage {
    *
    * @return bool
    */
-  private function validateWebformSchema($webform_id, File $file) {
+  public function validateWebformSchema($webform_id, File $file) {
     return !empty($this->getWebformKeysFromFile($webform_id, $file));
   }
 
@@ -109,7 +109,7 @@ class WebformPrepopulateStorage {
    *
    * @return array
    */
-  private function getWebformKeysFromFile($webform_id, File $file) {
+  public function getWebformKeysFromFile($webform_id, File $file) {
     $result = [];
     try {
       /** @var \Drupal\webform\WebformEntityStorage $webformStorage */
@@ -135,7 +135,7 @@ class WebformPrepopulateStorage {
    *
    * @return array
    */
-  private function getFileHeader(File $file) {
+  public function getFileHeader(File $file) {
     $result = [];
     /** @var \Generator $generator */
     $generator = $this->readFileByLines($file, 1);
@@ -337,7 +337,7 @@ class WebformPrepopulateStorage {
       ->extend('Drupal\Core\Database\Query\TableSortExtender')
       ->orderByHeader($header)
       ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-      ->limit(25)
+      ->limit(25) // @todo set limit.
       ->fields('wp');
 
     if ($search) {
