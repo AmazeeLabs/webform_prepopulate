@@ -70,7 +70,7 @@ class ConfirmDeleteForm extends ConfirmFormBase {
         ->addMessage($this->t('Prepopulate data for the @webform Webform have been deleted.', [
           '@webform' => $this->webform,
         ]));
-      $form_state->setRedirectUrl(Url::fromRoute('webform_prepopulate.prepopulate_form', ['webform' => $this->webform]));
+      $form_state->setRedirectUrl(Url::fromRoute('webform_prepopulate.prepopulate_list_form', ['webform' => $this->webform]));
     }
   }
 
@@ -78,7 +78,7 @@ class ConfirmDeleteForm extends ConfirmFormBase {
    * {@inheritdoc}
    */
   public function getCancelUrl() {
-    return Url::fromRoute('webform_prepopulate.prepopulate_form', ['webform' => $this->webform]);
+    return Url::fromRoute('webform_prepopulate.prepopulate_list_form', ['webform' => $this->webform]);
   }
 
   /**

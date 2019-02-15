@@ -2,6 +2,7 @@
 
 namespace Drupal\webform_prepopulate\Form;
 
+use Drupal\Core\Link;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\webform_prepopulate\WebformPrepopulateStorage;
 use Drupal\Core\Datetime\DateFormatterInterface;
@@ -114,7 +115,6 @@ class PrepopulateListForm extends FormBase {
       $row['timestamp'] = $this->dateFormatter->format($result->timestamp, 'short');
 
       $operations = [];
-      //if ($this->entityTypeManager->getAccessControlHandler('webform')->...)) {
       $operations['view'] = [
         'title' => $this->t('Prepopulate'),
         'url' => Url::fromRoute('entity.webform.canonical', ['webform' => $this->webform->id()], ['query' => ['hash' => $result->hash]]),
@@ -129,12 +129,15 @@ class PrepopulateListForm extends FormBase {
       $rows[] = $row;
     }
 
+    $uploadUrl = Url::fromRoute('entity.webform.settings_form', ['webform' => $this->webform->id()]);
+    $uploadLink = Link::fromTextAndUrl($this->t('Upload a file'), $uploadUrl)->toRenderable();
     $form['prepopulate_table']  = [
       '#theme' => 'table',
       '#header' => $header,
       '#rows' => $rows,
-      // @todo if empty, add a link to upload the file
-      '#empty' => $this->t('There are no prepopulate data yet.'),
+      '#empty' => $this->t('There are no prepopulate data yet. @link.', [
+        '@link' => \Drupal::service('renderer')->renderRoot($uploadLink),
+       ]),
     ];
     $form['prepopulate_pager'] = ['#type' => 'pager'];
     return $form;
@@ -145,10 +148,10 @@ class PrepopulateListForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     if ($form_state->getTriggeringElement()['#action'] == 'filter') {
-      $form_state->setRedirect('webform_prepopulate.prepopulate_form', ['webform' => $this->webform->id()], ['query' => ['search' => trim($form_state->getValue('filter'))]]);
+      $form_state->setRedirect('webform_prepopulate.prepopulate_list_form', ['webform' => $this->webform->id()], ['query' => ['search' => trim($form_state->getValue('filter'))]]);
     }
     else {
-      $form_state->setRedirect('webform_prepopulate.prepopulate_form', ['webform' => $this->webform->id()]);
+      $form_state->setRedirect('webform_prepopulate.prepopulate_list_form', ['webform' => $this->webform->id()]);
     }
   }
 

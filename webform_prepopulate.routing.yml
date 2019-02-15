@@ -1,4 +1,4 @@
-webform_prepopulate.prepopulate_form:
+webform_prepopulate.prepopulate_list_form:
   path: '/admin/structure/webform/manage/{webform}/prepopulate'
   defaults:
     _title_callback: '\Drupal\webform\Controller\WebformEntityController::title'

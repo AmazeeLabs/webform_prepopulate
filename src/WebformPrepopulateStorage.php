@@ -4,7 +4,9 @@ namespace Drupal\webform_prepopulate;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Database\Driver\sqlite\Connection;
+use Drupal\Core\Link;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\Url;
 use Drupal\file\Entity\File;
 
 /**
@@ -292,7 +294,11 @@ class WebformPrepopulateStorage {
       $this->validateWebformSchema($webform_id, $file) &&
       $this->saveFileData($webform_id, $file)
     ) {
-      \Drupal::messenger()->addMessage($this->t('The file has been saved into the database.'));
+      $actionsUrl = Url::fromRoute('webform_prepopulate.prepopulate_list_form', ['webform' => $webform_id]);
+      $actionLink = Link::fromTextAndUrl($this->t('View and test imported data'), $actionsUrl)->toRenderable();
+      \Drupal::messenger()->addMessage($this->t('The file has been saved into the database. @link.', [
+        '@link' => \Drupal::service('renderer')->renderRoot($actionLink),
+      ]));
     }
     else {
       \Drupal::messenger()->addError($this->t('There was and error while saving the prepopulate file into the database.'));
