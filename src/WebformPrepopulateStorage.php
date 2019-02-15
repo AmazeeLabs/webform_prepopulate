@@ -303,7 +303,7 @@ class WebformPrepopulateStorage {
   }
 
   /**
-   * Returns the data associated to a hash.
+   * Returns the data associated to a hash for a Webform.
    *
    * @param string $hash
    * @param string $webform_id
@@ -320,6 +320,30 @@ class WebformPrepopulateStorage {
     if ($data) {
       $result = unserialize($data);
     }
+    return $result;
+  }
+
+  /**
+   * Returns the data associated to a Webform.
+   *
+   * @param string $webform_id
+   *
+   * @return array
+   */
+  public function listData($webform_id, $header, $search) {
+    $query = $this->connection
+      ->select('webform_prepopulate', 'wp')
+      ->condition('wp.webform_id', $webform_id)
+      ->extend('Drupal\Core\Database\Query\TableSortExtender')
+      ->orderByHeader($header)
+      ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
+      ->limit(25)
+      ->fields('wp');
+
+    if ($search) {
+      // @todo add LIKE
+    }
+    $result = $query->execute()->fetchAll();
     return $result;
   }
 

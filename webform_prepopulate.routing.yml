@@ -2,11 +2,6 @@ entity.webform_prepopulate.prepopulate_form:
   path: '/admin/structure/webform/manage/{webform}/prepopulate'
   defaults:
     _title_callback: '\Drupal\webform\Controller\WebformEntityController::title'
-    _entity_form: 'webform.source'
-    # @todo controller that checks the mapping of the columns (elements could have been deleted after import)
-    # @todo if empty, add a link to upload the file
-    # @todo if data, show an excerpt and a link to test.
-    #_controller: '\Drupal\webform_prepopulate\Controller\WebformPrepopulateController::readData'
+    _controller: '\Drupal\webform_prepopulate\Controller\WebformPrepopulateController::getDataOperations'
   requirements:
-    # @todo change read access
     _custom_access: '\Drupal\webform_prepopulate\Access\WebformPrepopulateAccess::checkWebformPrepopulateAccess'
