@@ -1,8 +1,24 @@
 # Webform pre-populate
 
-Pre-populate a Drupal Webform with an external data source without disclosing information in the URL.
+Pre-populate a Drupal Webform with an external data source without disclosing information via the URL.
 
-Currently, only the _file_ data source is supported.
+## Use case
+
+When user data are not stored in Drupal and Webform elements have to be prepopulated.
+Passing values as plain URL parameters are disclosing information in some cases:
+- When they are passed over http
+- Values can be stored in the server logs
+- Values can be stored in analytics tools (e.g. Google Analytics)
+
+Since GDPR, deleting these data could be something hard to tackle.
+
+## Proposed solution
+
+Pass a hash in the url (user id's could be easy to guess) so a mapping can be done
+between the systems.
+
+Currently, only the _file_ data source is supported. This could be extended later with API calls
+and authentication.
 
 ## Prepare a file
 
@@ -17,7 +33,7 @@ The file should be `csv` and have the following structure:
 
 Where 
 - `hash` is the relation with Drupal and the external system (e.g. Mailchimp)
-- `name` and `email` are  keys of a Webform element
+- `name` and `email` are  keys of a Webform element.
 
 ## Upload the file and configure the Webform
 
