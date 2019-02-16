@@ -61,12 +61,17 @@ class WebformPrepopulateUtils {
    * @return bool
    */
   public function hasHashAccess($hash, $webform_id) {
+    // Bypass by site wide permission.
     if (\Drupal::currentUser()->hasPermission('bypass webform prepopulate hash access limit')) {
       return TRUE;
     }
 
-    // @todo if not disabled in configuration for this Webform.
-    $maxHashAccess = self::MAX_HASH_ACCESS;
+    // Bypass by Webform configuration.
+    if ($this->getWebformSetting('disable_hash_access_limit', $webform_id) === 1) {
+      return TRUE;
+    }
+
+    // Main case.
     $tempStore = $this->tempstorePrivate->get('webform_prepopulate');
     $accessedHashes = [];
     try {
@@ -85,7 +90,45 @@ class WebformPrepopulateUtils {
     catch (\Drupal\Core\TempStore\TempStoreException $exception) {
       \Drupal::logger('webform_prepopulate')->warning($exception->getMessage());
     }
-    return count($accessedHashes) <= $maxHashAccess;
+    return count($accessedHashes) <= self::MAX_HASH_ACCESS;
+  }
+
+  /**
+   * Check if prepopulate from a file data source is enabled.
+   *
+   * @param string $webform_id
+   *
+   * @return bool
+   */
+  public function isFilePrepopulateEnabled($webform_id) {
+    return $this->getWebformSetting('form_prepopulate_enable_file', $webform_id) === 1;
+  }
+
+  /**
+   * Get setting defined via the hook_form_webform_settings_form_form_alter().
+   *
+   * @param string $setting
+   * @param string $webform_id
+   *
+   * @return mixed
+   */
+  public function getWebformSetting($setting, $webform_id) {
+    $result = NULL;
+    try {
+      /** @var \Drupal\webform\Entity\Webform $webformEntity */
+      $webformEntity = $this->entityTypeManager->getStorage('webform')->load($webform_id);
+      if (
+        !empty($webformEntity) &&
+        !empty($settings = $webformEntity->getThirdPartySettings('webform_prepopulate')) &&
+        isset($settings[$setting])
+      ) {
+        $result = $settings[$setting];
+      }
+    }
+    catch (\Throwable $exception) {
+      \Drupal::logger('webform_prepopulate')->error($exception->getMessage());
+    }
+    return $result;
   }
 
 }

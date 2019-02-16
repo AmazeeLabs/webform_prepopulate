@@ -34,10 +34,10 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
   $webform_entity = $form_object->getEntity();
   $webform_prepopulate_settings = $webform_entity->getThirdPartySettings('webform_prepopulate');
   $form_prepopulate_weight = (int) $form['form_behaviors']['form_prepopulate']['#weight'];
+
   $form['form_behaviors']['form_prepopulate_enable_file'] = [
     '#type' => 'checkbox',
-    '#title' => t('Use a file to prepopulate'),
-    // @todo add hint if there are already entries in the database for this webform.
+    '#title' => t('Enable prepopulate from a file data source'),
     '#description' => t('Upload a file to insert or replace prepopulate data. The file is converted as a database storage then deleted.'),
     '#default_value' => isset($webform_prepopulate_settings['form_prepopulate_enable_file']) ? $webform_prepopulate_settings['form_prepopulate_enable_file'] : FALSE,
     '#states' => [
@@ -47,6 +47,20 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
     ],
     '#weight' => ++$form_prepopulate_weight,
   ];
+
+  $form['form_behaviors']['disable_hash_access_limit'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Disable access limit for prepopulating a Webform.'),
+    '#description' => t('This should be used for testing as anonymous only. Preferably use the <em>Bypass webform prepopulate hash access limit</em> permission for trusted roles.'),
+    '#default_value' => isset($webform_prepopulate_settings['disable_hash_access_limit']) ? $webform_prepopulate_settings['disable_hash_access_limit'] : FALSE,
+    '#states' => [
+      'visible' => [
+        ':input[name="form_prepopulate"]' => ['checked' => TRUE],
+      ],
+    ],
+    '#weight' => ++$form_prepopulate_weight,
+  ];
+
   // States for managed_file
   // https://www.drupal.org/project/drupal/issues/2847425
   // Description for managed_file
@@ -73,7 +87,7 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
     ],
     '#weight' => ++$form_prepopulate_weight,
   ];
-  // @todo add option to set the delimiter.
+  // @todo add option to set the delimiter, see schema csv_delimiter
 
   $form['#entity_builders'][] = '_webform_prepopulate_webform_settings_add_form_builder';
   $form['#validate'][] = '_webform_prepopulate_settings_validate';
@@ -90,12 +104,24 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
  * @param \Drupal\Core\Form\FormStateInterface $form_state
  */
 function _webform_prepopulate_webform_settings_add_form_builder($entity_type, \Drupal\webform\Entity\Webform $webform, &$form, FormStateInterface $form_state) {
-  // Set the enable flag to the configuration entity.
-  if ($form_state->getValue('form_prepopulate_enable_file')) {
-    $webform->setThirdPartySetting('webform_prepopulate', 'form_prepopulate_enable_file', $form_state->getValue('form_prepopulate_enable_file'));
+  _webform_prepopulate_handle_third_party_setting('form_prepopulate_enable_file', 'form_prepopulate_enable_file', $webform, $form_state);
+  _webform_prepopulate_handle_third_party_setting('disable_hash_access_limit', 'disable_hash_access_limit', $webform, $form_state);
+}
+
+/**
+ * Handle a setting on a Webform configuration entity for a form value.
+ *
+ * @param string $setting
+ * @param string $form_key
+ * @param \Drupal\webform\Entity\Webform $webform
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ */
+function _webform_prepopulate_handle_third_party_setting($setting, $form_key, \Drupal\webform\Entity\Webform $webform, FormStateInterface $form_state) {
+  if ($form_state->getValue($form_key)) {
+    $webform->setThirdPartySetting('webform_prepopulate', $setting, $form_state->getValue($form_key));
   }
   else {
-    $webform->unsetThirdPartySetting('webform_prepopulate', 'form_prepopulate_enable_file');
+    $webform->unsetThirdPartySetting('webform_prepopulate', $setting);
   }
 }
 
@@ -123,7 +149,7 @@ function _webform_prepopulate_settings_validate($form, FormStateInterface &$form
         $webform_entity = $form_object->getEntity();
         /** @var \Drupal\webform_prepopulate\WebformPrepopulateStorage $webformPrepopulateStorage */
         $webformPrepopulateStorage = \Drupal::service('webform_prepopulate.storage');
-        $webformPrepopulateStorage->setDelimiter(',');
+        $webformPrepopulateStorage->setDelimiter(','); // @todo get from configuration
         $webformPrepopulateStorage->persistWebformDataFromFile($prepopulate_file[0], $webform_entity->id());
       }
     }
@@ -136,14 +162,18 @@ function _webform_prepopulate_settings_validate($form, FormStateInterface &$form
 /**
  * Implements hook_webform_submission_form_alter().
  *
- * Prepopulates if the hash is found in the storage.
+ * Prepopulates the Webform if the conditions are met.
  */
 function webform_prepopulate_webform_submission_form_alter(array &$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  /** @var \Drupal\webform_prepopulate\WebformPrepopulateUtils $utils */
+  $utils = \Drupal::service('webform_prepopulate.utils');
   $hash = \Drupal::request()->query->get('hash');
-  if (!empty($hash) && !empty($form['#webform_id'])) {
+  if (
+    $utils->isFilePrepopulateEnabled($form['#webform_id']) &&
+    !empty($hash) &&
+    !empty($form['#webform_id'])
+  ) {
     // If there are too many access to several hashes, do not prepopulate.
-    /** @var \Drupal\webform_prepopulate\WebformPrepopulateUtils $utils */
-    $utils = \Drupal::service('webform_prepopulate.utils');
     if ($utils->hasHashAccess($hash, $form['#webform_id'])) {
       /** @var \Drupal\webform_prepopulate\WebformPrepopulateStorage $webformPrepopulateStorage */
       $webformPrepopulateStorage = \Drupal::service('webform_prepopulate.storage');
