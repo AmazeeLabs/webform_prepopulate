@@ -7,6 +7,8 @@
 
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
+use Drupal\Core\Link;
 
 /**
  * Implements hook_help().
@@ -29,36 +31,49 @@ function webform_prepopulate_help($route_name, RouteMatchInterface $route_match)
  */
 function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   /** @var \Drupal\Core\Entity\EntityFormInterface $webform_object */
-  $form_object = $form_state->getFormObject();
+  $formObject = $form_state->getFormObject();
   /** @var \Drupal\webform\Entity\Webform $webform_entity */
-  $webform_entity = $form_object->getEntity();
-  $webform_prepopulate_settings = $webform_entity->getThirdPartySettings('webform_prepopulate');
-  $form_prepopulate_weight = (int) $form['form_behaviors']['form_prepopulate']['#weight'];
+  $webformEntity = $formObject->getEntity();
+  $webformPrepopulateSettings = $webformEntity->getThirdPartySettings('webform_prepopulate');
+  $formPrepopulateWeight = (int) $form['form_behaviors']['form_prepopulate']['#weight'];
 
+  /** @var \Drupal\webform_prepopulate\WebformPrepopulateStorage $webformPrepopulateStorage */
+  $webformPrepopulateStorage = \Drupal::service('webform_prepopulate.storage');
+  $numberEntries = $webformPrepopulateStorage->countDataEntries($webformEntity->id());
+  $entriesMessage = t('There are not prepopulate data available yet for this Webform');
+  if (!empty($numberEntries)) {
+    $actionsUrl = Url::fromRoute('webform_prepopulate.prepopulate_list_form', ['webform' => $webformEntity->id()]);
+    $actionLink = Link::fromTextAndUrl(t('View and test imported data'), $actionsUrl)->toRenderable();
+    $entriesMessage = t('There are %num_entries entries available for this Webform. @link.', [
+      '%num_entries' => $numberEntries,
+      '@link' => \Drupal::service('renderer')->renderRoot($actionLink),
+    ]);
+  }
   $form['form_behaviors']['form_prepopulate_enable_file'] = [
     '#type' => 'checkbox',
-    '#title' => t('Enable prepopulate from a file data source'),
+    '#suffix' => $entriesMessage,
+    '#title' => t('Enable prepopulate from a file data source.'),
     '#description' => t('Upload a file to insert or replace prepopulate data. The file is converted as a database storage then deleted.'),
-    '#default_value' => isset($webform_prepopulate_settings['form_prepopulate_enable_file']) ? $webform_prepopulate_settings['form_prepopulate_enable_file'] : FALSE,
+    '#default_value' => isset($webformPrepopulateSettings['form_prepopulate_enable_file']) ? $webformPrepopulateSettings['form_prepopulate_enable_file'] : FALSE,
     '#states' => [
       'visible' => [
         ':input[name="form_prepopulate"]' => ['checked' => TRUE],
       ],
     ],
-    '#weight' => ++$form_prepopulate_weight,
+    '#weight' => ++$formPrepopulateWeight,
   ];
 
   $form['form_behaviors']['disable_hash_access_limit'] = [
     '#type' => 'checkbox',
     '#title' => t('Disable access limit for prepopulating a Webform.'),
     '#description' => t('This should be used for testing as anonymous only. Preferably use the <em>Bypass webform prepopulate hash access limit</em> permission for trusted roles.'),
-    '#default_value' => isset($webform_prepopulate_settings['disable_hash_access_limit']) ? $webform_prepopulate_settings['disable_hash_access_limit'] : FALSE,
+    '#default_value' => isset($webformPrepopulateSettings['disable_hash_access_limit']) ? $webformPrepopulateSettings['disable_hash_access_limit'] : FALSE,
     '#states' => [
       'visible' => [
         ':input[name="form_prepopulate"]' => ['checked' => TRUE],
       ],
     ],
-    '#weight' => ++$form_prepopulate_weight,
+    '#weight' => ++$formPrepopulateWeight,
   ];
 
   // States for managed_file
@@ -85,7 +100,7 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
         ':input[name="form_prepopulate_enable_file"]' => ['checked' => TRUE],
       ],
     ],
-    '#weight' => ++$form_prepopulate_weight,
+    '#weight' => ++$formPrepopulateWeight,
   ];
   // @todo add option to set the delimiter, see schema csv_delimiter
 
@@ -144,13 +159,13 @@ function _webform_prepopulate_settings_validate($form, FormStateInterface &$form
       $prepopulate_file = $form_state->getValue('form_prepopulate_file');
       if (isset($prepopulate_file[0]) && !empty($prepopulate_file[0])) {
         /** @var \Drupal\Core\Entity\EntityFormInterface $webform_object */
-        $form_object = $form_state->getFormObject();
-        /** @var \Drupal\webform\Entity\Webform $webform_entity */
-        $webform_entity = $form_object->getEntity();
+        $formObject = $form_state->getFormObject();
+        /** @var \Drupal\webform\Entity\Webform $webformEntity */
+        $webformEntity = $formObject->getEntity();
         /** @var \Drupal\webform_prepopulate\WebformPrepopulateStorage $webformPrepopulateStorage */
         $webformPrepopulateStorage = \Drupal::service('webform_prepopulate.storage');
         $webformPrepopulateStorage->setDelimiter(','); // @todo get from configuration
-        $webformPrepopulateStorage->persistWebformDataFromFile($prepopulate_file[0], $webform_entity->id());
+        $webformPrepopulateStorage->persistWebformDataFromFile($prepopulate_file[0], $webformEntity->id());
       }
     }
     catch (\Drupal\Core\Entity\EntityStorageException $exception) {

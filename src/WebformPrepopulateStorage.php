@@ -5,9 +5,9 @@ namespace Drupal\webform_prepopulate;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Database\Driver\sqlite\Connection;
+use Drupal\Core\Url;
 use Drupal\Core\Link;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\Core\Url;
 use Drupal\file\Entity\File;
 
 /**
@@ -348,6 +348,21 @@ class WebformPrepopulateStorage {
       $result = unserialize($data);
     }
     return $result;
+  }
+
+  /**
+   * Counts the entries of prepopulate data for a Webform.
+   *
+   * @param string $webform_id
+   *
+   * @return mixed
+   */
+  public function countDataEntries($webform_id) {
+    return $this->connection
+      ->select('webform_prepopulate', 'wp')
+      ->condition('wp.webform_id', $webform_id)
+      ->fields('wp', ['hash'])
+      ->countQuery()->execute()->fetchField();
   }
 
   /**
