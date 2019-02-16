@@ -129,18 +129,36 @@ class PrepopulateListForm extends FormBase {
       $rows[] = $row;
     }
 
-    $uploadUrl = Url::fromRoute('entity.webform.settings_form', ['webform' => $this->webform->id()]);
-    $uploadLink = Link::fromTextAndUrl($this->t('Upload a file'), $uploadUrl)->toRenderable();
     $form['prepopulate_table']  = [
       '#theme' => 'table',
       '#header' => $header,
       '#rows' => $rows,
-      '#empty' => $this->t('There are no prepopulate data yet. @link.', [
-        '@link' => \Drupal::service('renderer')->renderRoot($uploadLink),
-       ]),
+      '#empty' => $this->getEmptyMessage($search),
     ];
     $form['prepopulate_pager'] = ['#type' => 'pager'];
     return $form;
+  }
+
+  /**
+   * Empty list message depending based on the active search.
+   *
+   * @param $search
+   *
+   * @return \Drupal\Core\StringTranslation\TranslatableMarkup|string
+   */
+  private function getEmptyMessage($search) {
+    $result = '';
+    if (!empty($search)) {
+      $result = $this->t('There are no prepopulate data matching this hash.');
+    }
+    else {
+      $uploadUrl = Url::fromRoute('entity.webform.settings_form', ['webform' => $this->webform->id()]);
+      $uploadLink = Link::fromTextAndUrl($this->t('Upload a file'), $uploadUrl)->toRenderable();
+      $result = $this->t('There are no prepopulate data yet. @link.', [
+        '@link' => \Drupal::service('renderer')->renderRoot($uploadLink),
+      ]);
+    }
+    return $result;
   }
 
   /**
