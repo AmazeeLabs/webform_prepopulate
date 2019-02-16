@@ -239,9 +239,7 @@ class WebformPrepopulateStorage {
   }
 
   /**
-   * Returns trimmed plain text values from an array.
-   *
-   * @todo nested arrays.
+   * Returns trimmed plain text values from a flat array.
    *
    * @param array $values
    *
@@ -250,7 +248,9 @@ class WebformPrepopulateStorage {
   private function arrayProcessPlainText(array $values) {
     $result = [];
     foreach ($values as $value) {
-      $result[] = trim(Html::escape($value));
+      // Multibyte trim.
+      $value = preg_replace('/(^\s+)|(\s+$)/us', '', $value);
+      $result[] = Html::escape($value);
     }
     return $result;
   }
@@ -271,7 +271,7 @@ class WebformPrepopulateStorage {
       $count = 0;
       foreach ($header as $column) {
         if (isset($line_values[$count])) {
-          $result[$column] = trim($line_values[$count]);
+          $result[$column] = $line_values[$count];
         }
         ++$count;
       }
@@ -283,7 +283,7 @@ class WebformPrepopulateStorage {
     else {
       $count = 0;
       while(count($header) > $count) {
-        $result[$header[$count]] = trim($line_values[$count]);
+        $result[$header[$count]] = $line_values[$count];
         ++$count;
       }
     }
@@ -317,7 +317,7 @@ class WebformPrepopulateStorage {
     ) {
       $actionsUrl = Url::fromRoute('webform_prepopulate.prepopulate_list_form', ['webform' => $webform_id]);
       $actionLink = Link::fromTextAndUrl($this->t('View and test imported data'), $actionsUrl)->toRenderable();
-      \Drupal::messenger()->addMessage($this->t('The file has been saved into the database. @link.', [
+      \Drupal::messenger()->addMessage($this->t('The file has been saved to the database. @link.', [
         '@link' => \Drupal::service('renderer')->renderRoot($actionLink),
       ]));
     }
