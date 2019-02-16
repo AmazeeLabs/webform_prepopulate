@@ -5,6 +5,7 @@ namespace Drupal\webform_prepopulate;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\webform_prepopulate\WebformPrepopulateStorage;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
  * Class WebformPrepopulateUtils.
@@ -35,12 +36,20 @@ class WebformPrepopulateUtils {
   protected $webformPrepopulateStorage;
 
   /**
+   * Drupal\Core\Entity\EntityTypeManagerInterface definition.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * Constructs a new WebformPrepopulateUtils object.
    */
-  public function __construct(PrivateTempStoreFactory $tempstore_private, ConfigFactoryInterface $config_factory, WebformPrepopulateStorage $webform_prepopulate_storage) {
+  public function __construct(PrivateTempStoreFactory $tempstore_private, ConfigFactoryInterface $config_factory, WebformPrepopulateStorage $webform_prepopulate_storage, EntityTypeManagerInterface $entity_type_manager) {
     $this->tempstorePrivate = $tempstore_private;
     $this->configFactory = $config_factory;
     $this->webformPrepopulateStorage = $webform_prepopulate_storage;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -52,8 +61,11 @@ class WebformPrepopulateUtils {
    * @return bool
    */
   public function hasHashAccess($hash, $webform_id) {
-    // @todo if user bypass permission.
-    // @todo if set in configuration for this Webform.
+    if (\Drupal::currentUser()->hasPermission('bypass webform prepopulate hash access limit')) {
+      return TRUE;
+    }
+
+    // @todo if not disabled in configuration for this Webform.
     $maxHashAccess = self::MAX_HASH_ACCESS;
     $tempStore = $this->tempstorePrivate->get('webform_prepopulate');
     $accessedHashes = [];

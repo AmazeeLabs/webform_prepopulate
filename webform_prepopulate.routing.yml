@@ -13,4 +13,4 @@ webform_prepopulate.delete_form:
     _title: 'Confirm deletion of prepopulate data'
   requirements:
     # @todo review permission
-    _permission: 'edit any webform'
+    _permission: 'edit webform prepopulate data'

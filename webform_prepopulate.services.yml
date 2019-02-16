@@ -5,4 +5,4 @@ services:
 
   webform_prepopulate.utils:
     class: Drupal\webform_prepopulate\WebformPrepopulateUtils
-    arguments: ['@tempstore.private', '@config.factory', '@webform_prepopulate.storage']
+    arguments: ['@tempstore.private', '@config.factory', '@webform_prepopulate.storage', '@entity_type.manager']
