@@ -40,7 +40,8 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
   /** @var \Drupal\webform_prepopulate\WebformPrepopulateStorage $webformPrepopulateStorage */
   $webformPrepopulateStorage = \Drupal::service('webform_prepopulate.storage');
   $numberEntries = $webformPrepopulateStorage->countDataEntries($webformEntity->id());
-  $entriesMessage = t('There are not prepopulate data available yet for this Webform');
+  // @todo add a link to the csv documentation.
+  $entriesMessage = t('There are not prepopulate data available yet for this Webform, upload a csv file.');
   if (!empty($numberEntries)) {
     $actionsUrl = Url::fromRoute('webform_prepopulate.prepopulate_list_form', ['webform' => $webformEntity->id()]);
     $actionLink = Link::fromTextAndUrl(t('View and test imported data'), $actionsUrl)->toRenderable();
@@ -213,11 +214,6 @@ function webform_prepopulate_webform_submission_form_alter(array &$form, \Drupal
           $form['elements'][$elementKey]['#default_value'] = $values[$elementKey];
         }
       }
-    }
-    else {
-      \Drupal::logger('webform_prepopulate')->warning(t('Hash access limit reached for ip @ip.', [
-        '@ip' => \Drupal::request()->getClientIp(),
-      ]));
     }
   }
 }

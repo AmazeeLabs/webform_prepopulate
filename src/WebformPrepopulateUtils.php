@@ -2,6 +2,7 @@
 
 namespace Drupal\webform_prepopulate;
 
+use Drupal\Component\Utility\Xss;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\webform_prepopulate\WebformPrepopulateStorage;
@@ -12,7 +13,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
  */
 class WebformPrepopulateUtils {
 
-  const MAX_HASH_ACCESS = 10;
+  const MAX_HASH_ACCESS = 5;
 
   /**
    * Drupal\Core\TempStore\PrivateTempStoreFactory definition.
@@ -71,7 +72,21 @@ class WebformPrepopulateUtils {
       return TRUE;
     }
 
-    // Main case.
+    // Exclude bots, as they will use several sessions,
+    // the tempStore is not useful here.
+    $userAgent = Xss::filter(\Drupal::request()->headers->get('user-agent'));
+    if(
+      empty($userAgent) ||
+      // @todo review bots list
+      (!empty($userAgent) && preg_match('~(bot|crawl|python)~i', $userAgent))
+    ){
+      \Drupal::logger('webform_prepopulate')->warning('Bot access blocked for user agent @agent.', [
+        '@agent' => $userAgent,
+      ]);
+      return FALSE;
+    }
+
+    // Main case for a single session.
     $tempStore = $this->tempstorePrivate->get('webform_prepopulate');
     $accessedHashes = [];
     try {
@@ -90,7 +105,16 @@ class WebformPrepopulateUtils {
     catch (\Drupal\Core\TempStore\TempStoreException $exception) {
       \Drupal::logger('webform_prepopulate')->warning($exception->getMessage());
     }
-    return count($accessedHashes) <= self::MAX_HASH_ACCESS;
+
+    $result = count($accessedHashes) <= self::MAX_HASH_ACCESS;
+
+    if (!$result) {
+      \Drupal::logger('webform_prepopulate')->warning(t('Hash access limit reached for ip @ip.', [
+        '@ip' => \Drupal::request()->getClientIp(),
+      ]));
+    }
+
+    return $result;
   }
 
   /**
