@@ -142,7 +142,9 @@ function webform_prepopulate_webform_submission_form_alter(array &$form, \Drupal
   $hash = \Drupal::request()->query->get('hash');
   if (!empty($hash) && !empty($form['#webform_id'])) {
     // If there are too many access to several hashes, do not prepopulate.
-    if (_webform_prepopulate_check_hash_access($hash, $form['#webform_id'])) {
+    /** @var \Drupal\webform_prepopulate\WebformPrepopulateUtils $utils */
+    $utils = \Drupal::service('webform_prepopulate.utils');
+    if ($utils->hasHashAccess($hash, $form['#webform_id'])) {
       /** @var \Drupal\webform_prepopulate\WebformPrepopulateStorage $webformPrepopulateStorage */
       $webformPrepopulateStorage = \Drupal::service('webform_prepopulate.storage');
       $values = $webformPrepopulateStorage->getDataFromHash($hash, $form['#webform_id']);
@@ -164,29 +166,3 @@ function webform_prepopulate_webform_submission_form_alter(array &$form, \Drupal
 }
 
 // @todo cron for delete
-// @todo move in utils service
-function _webform_prepopulate_check_hash_access($hash, $webform_id) {
-  // @todo if user bypass permission.
-  // @todo if set in configuration.
-  $maxHashAccess = 10;
-  /** @var \Drupal\Core\TempStore\PrivateTempStore $tempStore */
-  $tempStore = \Drupal::service('user.private_tempstore')->get('webform_prepopulate');
-  $accessedHashes = [];
-  try {
-    if (empty($tempStore->get('accessed_hashes_'. $webform_id))) {
-      $accessedHashes[] = $hash;
-      $tempStore->set('accessed_hashes_'. $webform_id, $accessedHashes);
-    }
-    else {
-      $accessedHashes = $tempStore->get('accessed_hashes_'. $webform_id);
-      if (!in_array($hash, $accessedHashes)) {
-        $accessedHashes[] = $hash;
-        $tempStore->set('accessed_hashes_'. $webform_id, $accessedHashes);
-      }
-    }
-  }
-  catch (\Drupal\Core\TempStore\TempStoreException $exception) {
-    \Drupal::logger('webform_prepopulate')->warning($exception->getMessage());
-  }
-  return count($accessedHashes) <= $maxHashAccess;
-}
