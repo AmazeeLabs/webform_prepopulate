@@ -49,10 +49,22 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
       '@link' => \Drupal::service('renderer')->renderRoot($actionLink),
     ]);
   }
-  $form['form_behaviors']['form_prepopulate_enable_file'] = [
+
+  $form['form_behaviors']['form_prepopulate_file'] = [
+    '#type' => 'fieldset',
+    '#title' => t('Prepopulate with a file'),
+    '#states' => [
+      'visible' => [
+        ':input[name="form_prepopulate"]' => ['checked' => TRUE],
+      ],
+    ],
+    '#weight' => ++$formPrepopulateWeight,
+  ];
+
+  $form['form_behaviors']['form_prepopulate_file']['form_prepopulate_enable_file'] = [
     '#type' => 'checkbox',
     '#suffix' => $entriesMessage,
-    '#title' => t('Enable prepopulate from a file data source.'),
+    '#title' => t('Enable prepopulate elements from a file data source.'),
     '#description' => t('Upload a file to insert or replace prepopulate data. The file is converted as a database storage then deleted.'),
     '#default_value' => isset($webformPrepopulateSettings['form_prepopulate_enable_file']) ? $webformPrepopulateSettings['form_prepopulate_enable_file'] : FALSE,
     '#states' => [
@@ -63,14 +75,14 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
     '#weight' => ++$formPrepopulateWeight,
   ];
 
-  $form['form_behaviors']['disable_hash_access_limit'] = [
+  $form['form_behaviors']['form_prepopulate_file']['disable_hash_access_limit'] = [
     '#type' => 'checkbox',
     '#title' => t('Disable access limit for prepopulating a Webform.'),
     '#description' => t('This should be used for testing as anonymous only. Preferably use the <em>Bypass webform prepopulate hash access limit</em> permission for trusted roles.'),
     '#default_value' => isset($webformPrepopulateSettings['disable_hash_access_limit']) ? $webformPrepopulateSettings['disable_hash_access_limit'] : FALSE,
     '#states' => [
       'visible' => [
-        ':input[name="form_prepopulate"]' => ['checked' => TRUE],
+        ':input[name="form_prepopulate_enable_file"]' => ['checked' => TRUE],
       ],
     ],
     '#weight' => ++$formPrepopulateWeight,
@@ -85,7 +97,7 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
     'file_validate_extensions' => ['csv'],
     'file_validate_size' => [file_upload_max_size()],
   ];
-  $form['form_behaviors']['form_prepopulate_file'] = [
+  $form['form_behaviors']['form_prepopulate_file']['form_prepopulate_file'] = [
     '#type' => 'managed_file',
     '#title' => t('Prepopulate file'),
     // @todo check if private file system is configured properly or use tmp.
