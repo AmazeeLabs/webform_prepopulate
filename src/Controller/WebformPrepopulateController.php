@@ -24,6 +24,9 @@ class WebformPrepopulateController extends ControllerBase {
     $form_class = \Drupal\webform_prepopulate\Form\PrepopulateListForm::class;
     return [
       'prepopulate_list_form' =>  \Drupal::formBuilder()->getForm($form_class),
+      // 'Add or replace' button is provided by a local action.
+      // So data manipulation actions are available
+      // at the top and the bottom of the list.
       'delete_link' => [
         '#type' => 'link',
         '#title' => $this->t('Delete prepopulate data'),

@@ -211,8 +211,8 @@ class WebformPrepopulateStorage {
         unset($lineValues[$hashColumn]);
         // Remove then the keys and sanitize before re-indexing.
         $indexedLine = $this->indexLineByColumns(
-          $this->arrayProcessPlainText(array_values($header)),
-          $this->arrayProcessPlainText(array_values($lineValues))
+          $this->processPlainText(array_values($header)),
+          $this->processPlainText(array_values($lineValues))
         );
         try {
           if(
@@ -245,7 +245,7 @@ class WebformPrepopulateStorage {
    *
    * @return array
    */
-  private function arrayProcessPlainText(array $values) {
+  private function processPlainText(array $values) {
     $result = [];
     foreach ($values as $value) {
       // Multibyte trim.

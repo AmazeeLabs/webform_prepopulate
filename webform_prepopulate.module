@@ -38,7 +38,7 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
     '#type' => 'checkbox',
     '#title' => t('Use a file to prepopulate'),
     // @todo add hint if there are already entries in the database for this webform.
-    '#description' => t('Upload a file with prepopulate data. The file is converted as a database storage then deleted.'),
+    '#description' => t('Upload a file to insert or replace prepopulate data. The file is converted as a database storage then deleted.'),
     '#default_value' => isset($webform_prepopulate_settings['form_prepopulate_enable_file']) ? $webform_prepopulate_settings['form_prepopulate_enable_file'] : FALSE,
     '#states' => [
       'visible' => [
