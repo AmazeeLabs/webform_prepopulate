@@ -68,7 +68,7 @@ class WebformPrepopulateStorage {
   }
 
   /**
-   * Deletes entries from the database for a Webform.
+   * Deletes prepopulate entries from the database for a Webform.
    *
    * @param string $webform_id
    *

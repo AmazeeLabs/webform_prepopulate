@@ -118,7 +118,23 @@ class WebformPrepopulateUtils {
   }
 
   /**
-   * Check if prepopulate from a file data source is enabled.
+   * Returns an array of all the Webform entities.
+   *
+   * @return array|\Drupal\webform\Entity\Webform[]
+   */
+  public function getWebformEntities() {
+    $result = [];
+    try {
+      $result = $this->entityTypeManager->getStorage('webform')->loadMultiple();
+    }
+    catch (\Throwable $exception) {
+      \Drupal::logger('webform_prepopulate')->error($exception->getMessage());
+    }
+    return $result;
+  }
+
+  /**
+   * Checks if prepopulate from a file data source is enabled.
    *
    * @param string $webform_id
    *
@@ -126,6 +142,17 @@ class WebformPrepopulateUtils {
    */
   public function isFilePrepopulateEnabled($webform_id) {
     return $this->getWebformSetting('form_prepopulate_enable_file', $webform_id) === 1;
+  }
+
+  /**
+   * Checks if the Webform prepopulate data must be removed when it is closed.
+   *
+   * @param string $webform_id
+   *
+   * @return bool
+   */
+  public function deleteDataOnClose($webform_id) {
+    return $this->getWebformSetting('delete_data_on_webform_close', $webform_id) === 1;
   }
 
   /**

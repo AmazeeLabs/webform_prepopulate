@@ -76,6 +76,19 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
     '#weight' => ++$formPrepopulateWeight,
   ];
 
+  $form['form_behaviors']['form_prepopulate_file']['delete_data_on_webform_close'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Delete data when the Webform is closed.'),
+    '#description' => t('Data can be deleted manually, anytime. Check this option to delete them automatically when the Webform is marked as "closed".'),
+    '#default_value' => isset($webformPrepopulateSettings['delete_data_on_webform_close']) ? $webformPrepopulateSettings['delete_data_on_webform_close'] : FALSE,
+    '#states' => [
+      'visible' => [
+        ':input[name="form_prepopulate_enable_file"]' => ['checked' => TRUE],
+      ],
+    ],
+    '#weight' => ++$formPrepopulateWeight,
+  ];
+
   $form['form_behaviors']['form_prepopulate_file']['disable_hash_access_limit'] = [
     '#type' => 'checkbox',
     '#title' => t('Disable access limit for prepopulating a Webform.'),
@@ -100,7 +113,7 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
   ];
   $form['form_behaviors']['form_prepopulate_file']['form_prepopulate_file'] = [
     '#type' => 'managed_file',
-    '#title' => t('Prepopulate file'),
+    '#title' => t('Add or replace prepopulate data'),
     // @todo check if private file system is configured properly or use tmp.
     '#upload_location' => 'private://webform_prepopulate',
     '#upload_validators' => $validators,
@@ -134,6 +147,7 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
 function _webform_prepopulate_webform_settings_add_form_builder($entity_type, \Drupal\webform\Entity\Webform $webform, &$form, FormStateInterface $form_state) {
   _webform_prepopulate_handle_third_party_setting('form_prepopulate_enable_file', 'form_prepopulate_enable_file', $webform, $form_state);
   _webform_prepopulate_handle_third_party_setting('disable_hash_access_limit', 'disable_hash_access_limit', $webform, $form_state);
+  _webform_prepopulate_handle_third_party_setting('delete_data_on_webform_close', 'delete_data_on_webform_close', $webform, $form_state);
 }
 
 /**
@@ -218,4 +232,25 @@ function webform_prepopulate_webform_submission_form_alter(array &$form, \Drupal
   }
 }
 
-// @todo cron for delete
+/**
+ * Implements hook_cron().
+ *
+ * Checks if prepopulate data must be removed on Webform close.
+ */
+function webform_prepopulate_cron() {
+  /** @var \Drupal\webform_prepopulate\WebformPrepopulateUtils $utils */
+  $utils = \Drupal::service('webform_prepopulate.utils');
+  /** @var \Drupal\webform_prepopulate\WebformPrepopulateStorage $webformPrepopulateStorage */
+  $webformPrepopulateStorage = \Drupal::service('webform_prepopulate.storage');
+  foreach ($utils->getWebformEntities() as $webform) {
+    if ($utils->deleteDataOnClose($webform->id()) && $webform->isClosed()) {
+      if ($webformPrepopulateStorage->deleteWebformData($webform->id())) {
+        \Drupal::logger('webform_prepopulate')->info(t(
+          'Deleted prepopulate data for Webform @webform_id.', [
+            '@webform_id' => $webform->id(),
+          ]
+        ));
+      }
+    }
+  }
+}
