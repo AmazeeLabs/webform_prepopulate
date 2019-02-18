@@ -68,6 +68,25 @@ class WebformPrepopulateStorage {
   }
 
   /**
+   * Maps the setting name to the delimiter value.
+   *
+   * @param string $setting
+   *
+   * @return string
+   */
+  public function mapDelimiterFromSettingValue($setting) {
+    switch($setting) {
+      case 'semicolon':
+        return ';';
+        break;
+      case 'comma':
+      default:
+        return ',';
+        break;
+    }
+  }
+
+  /**
    * Deletes prepopulate entries from the database for a Webform.
    *
    * @param string $webform_id

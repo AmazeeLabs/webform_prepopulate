@@ -102,6 +102,19 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
     '#weight' => ++$formPrepopulateWeight,
   ];
 
+  $form['form_behaviors']['form_prepopulate_file']['csv_delimiter'] = [
+    '#type' => 'radios',
+    '#title' => t('CSV delimiter'),
+    '#options' => ['comma' => 'Comma (,)', 'semicolon' => 'Semicolon (;)',],
+    '#default_value' => isset($webformPrepopulateSettings['csv_delimiter']) ? $webformPrepopulateSettings['csv_delimiter'] : 'comma',
+    '#states' => [
+      'visible' => [
+        ':input[name="form_prepopulate_enable_file"]' => ['checked' => TRUE],
+      ],
+    ],
+    '#weight' => ++$formPrepopulateWeight,
+  ];
+
   // States for managed_file
   // https://www.drupal.org/project/drupal/issues/2847425
   // Description for managed_file
@@ -148,6 +161,7 @@ function _webform_prepopulate_webform_settings_add_form_builder($entity_type, \D
   _webform_prepopulate_handle_third_party_setting('form_prepopulate_enable_file', 'form_prepopulate_enable_file', $webform, $form_state);
   _webform_prepopulate_handle_third_party_setting('disable_hash_access_limit', 'disable_hash_access_limit', $webform, $form_state);
   _webform_prepopulate_handle_third_party_setting('delete_data_on_webform_close', 'delete_data_on_webform_close', $webform, $form_state);
+  _webform_prepopulate_handle_third_party_setting('csv_delimiter', 'csv_delimiter', $webform, $form_state);
 }
 
 /**
@@ -191,7 +205,11 @@ function _webform_prepopulate_settings_validate($form, FormStateInterface &$form
         $webformEntity = $formObject->getEntity();
         /** @var \Drupal\webform_prepopulate\WebformPrepopulateStorage $webformPrepopulateStorage */
         $webformPrepopulateStorage = \Drupal::service('webform_prepopulate.storage');
-        $webformPrepopulateStorage->setDelimiter(','); // @todo get from configuration
+        /** @var \Drupal\webform_prepopulate\WebformPrepopulateUtils $utils */
+        $utils = \Drupal::service('webform_prepopulate.utils');
+        $delimiterSetting = $utils->getWebformSetting('csv_delimiter', $webformEntity->id());
+        $delimiter = $webformPrepopulateStorage->mapDelimiterFromSettingValue($delimiterSetting);
+        $webformPrepopulateStorage->setDelimiter($delimiter);
         $webformPrepopulateStorage->persistWebformDataFromFile($prepopulate_file[0], $webformEntity->id());
       }
     }
