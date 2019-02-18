@@ -4,7 +4,7 @@ namespace Drupal\webform_prepopulate;
 
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Database\Driver\sqlite\Connection;
+use Drupal\Core\Database\Connection;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -209,7 +209,7 @@ class WebformPrepopulateStorage {
   private function saveFileData($webform_id, File $file) {
     // @todo define a strategy for small / big files with yield, batch, multiple inserts.
     $header = $this->getFileHeader($file);
-    // @todo exception for several columns.
+    // @todo exception for several hash columns.
     $hashColumn = array_search('hash', array_map('strtolower', $header));
 
     // Fail if there is no hash column.
@@ -239,16 +239,13 @@ class WebformPrepopulateStorage {
           $this->processPlainText(array_values($lineValues))
         );
         try {
-          if (
-            $this->connection->insert('webform_prepopulate')->fields([
-              'webform_id' => $webform_id,
-              'hash' => $hash,
-              'data' => serialize($indexedLine),
-              'timestamp' => \Drupal::time()->getRequestTime(),
-            ])->execute()
-          ) {
-            ++$inserted;
-          }
+          $this->connection->insert('webform_prepopulate')->fields([
+            'webform_id' => $webform_id,
+            'hash' => $hash,
+            'data' => serialize($indexedLine),
+            'timestamp' => \Drupal::time()->getRequestTime(),
+          ])->execute();
+          ++$inserted;
         }
         catch (\Throwable $exception) {
           // This will allow to fail early in case of duplicate hash.
