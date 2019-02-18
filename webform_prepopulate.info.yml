@@ -1,6 +1,6 @@
 name: 'Webform Prepopulate'
 type: module
-description: 'Pre-populate a Drupal Webform with an external data source without disclosing information in the URL.'
+description: 'Pre-populate a Webform with an external data source without disclosing information in the URL.'
 core: 8.x
 package: 'Webform'
 dependencies:

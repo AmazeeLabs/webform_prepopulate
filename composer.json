@@ -1,7 +1,7 @@
 {
   "name": "drupal/webform_prepopulate",
   "type": "drupal-module",
-  "description": "Pre-populate a Drupal Webform with an external data source without disclosing information in the URL.",
+  "description": "Pre-populate a Webform with an external data source without disclosing information in the URL.",
   "keywords": ["Drupal"],
   "license": "GPL-2.0+",
   "homepage": "https://www.drupal.org/project/webform_prepopulate",
