@@ -207,10 +207,7 @@ function _webform_prepopulate_settings_validate(array $form, FormStateInterface 
         $webformEntity = $formObject->getEntity();
         /** @var \Drupal\webform_prepopulate\WebformPrepopulateStorage $webformPrepopulateStorage */
         $webformPrepopulateStorage = \Drupal::service('webform_prepopulate.storage');
-        /** @var \Drupal\webform_prepopulate\WebformPrepopulateUtils $utils */
-        $utils = \Drupal::service('webform_prepopulate.utils');
-        $delimiterSetting = $utils->getWebformSetting('csv_delimiter', $webformEntity->id());
-        $delimiter = $webformPrepopulateStorage->mapDelimiterFromSettingValue($delimiterSetting);
+        $delimiter = $webformPrepopulateStorage->mapDelimiterFromSettingValue($form_state->getValue('csv_delimiter'));
         $webformPrepopulateStorage->setDelimiter($delimiter);
         $webformPrepopulateStorage->persistWebformDataFromFile($prepopulate_file[0], $webformEntity->id());
       }
