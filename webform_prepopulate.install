@@ -11,6 +11,21 @@
 function webform_prepopulate_uninstall() {
   // @todo delete configuration
   // @see config/schema
+
+  // Delete prepopulate data for all Webforms.
+  /** @var \Drupal\webform_prepopulate\WebformPrepopulateUtils $utils */
+  $utils = \Drupal::service('webform_prepopulate.utils');
+  /** @var \Drupal\webform_prepopulate\WebformPrepopulateStorage $webformPrepopulateStorage */
+  $webformPrepopulateStorage = \Drupal::service('webform_prepopulate.storage');
+  foreach ($utils->getWebformEntities() as $webform) {
+    if ($webformPrepopulateStorage->deleteWebformData($webform->id())) {
+      \Drupal::logger('webform_prepopulate')->info(t(
+        'Deleted prepopulate data for Webform @webform_id.', [
+          '@webform_id' => $webform->id(),
+        ]
+      ));
+    }
+  }
 }
 
 /**
