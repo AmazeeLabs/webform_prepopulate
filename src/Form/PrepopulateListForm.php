@@ -39,7 +39,7 @@ class PrepopulateListForm extends FormBase {
   /**
    * Constructs a new WebformPrepopulateController object.
    *
-   * @param \Drupal\webform_prepopulate\WebformPrepopulateStorage
+   * @param \Drupal\webform_prepopulate\WebformPrepopulateStorage $webform_prepopulate_storage
    *   The Webform prepopulate storage.
    * @param \Drupal\Core\Datetime\DateFormatterInterface $date_formatter
    *   The date Formatter service.
@@ -142,7 +142,7 @@ class PrepopulateListForm extends FormBase {
   /**
    * Empty list message depending based on the active search.
    *
-   * @param $search
+   * @param string $search
    *
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup|string
    */

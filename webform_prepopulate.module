@@ -159,7 +159,7 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
  * @param array $form
  * @param \Drupal\Core\Form\FormStateInterface $form_state
  */
-function _webform_prepopulate_webform_settings_add_form_builder($entity_type, Webform $webform, &$form, FormStateInterface $form_state) {
+function _webform_prepopulate_webform_settings_add_form_builder($entity_type, Webform $webform, array &$form, FormStateInterface $form_state) {
   _webform_prepopulate_handle_third_party_setting('form_prepopulate_enable_file', 'form_prepopulate_enable_file', $webform, $form_state);
   _webform_prepopulate_handle_third_party_setting('disable_hash_access_limit', 'disable_hash_access_limit', $webform, $form_state);
   _webform_prepopulate_handle_third_party_setting('delete_data_on_webform_close', 'delete_data_on_webform_close', $webform, $form_state);
@@ -196,7 +196,7 @@ function _webform_prepopulate_handle_third_party_setting($setting, $form_key, We
  * @param array $form
  * @param \Drupal\Core\Form\FormStateInterface $form_state
  */
-function _webform_prepopulate_settings_validate($form, FormStateInterface &$form_state) {
+function _webform_prepopulate_settings_validate(array $form, FormStateInterface &$form_state) {
   if ($form_state->getValue('form_prepopulate_file')) {
     try {
       $prepopulate_file = $form_state->getValue('form_prepopulate_file');
@@ -256,6 +256,9 @@ function webform_prepopulate_webform_submission_form_alter(array &$form, FormSta
  * Implements hook_cron().
  *
  * Checks if prepopulate data must be removed on Webform close.
+ * This could be triggered on Webform settings save instead but is
+ * more tolerant to configuration errors this way as it is not
+ * immediately executed.
  */
 function webform_prepopulate_cron() {
   /** @var \Drupal\webform_prepopulate\WebformPrepopulateUtils $utils */

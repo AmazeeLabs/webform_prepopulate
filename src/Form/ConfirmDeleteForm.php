@@ -30,7 +30,7 @@ class ConfirmDeleteForm extends ConfirmFormBase {
   /**
    * Constructs a new WebformPrepopulateController object.
    *
-   * @param \Drupal\webform_prepopulate\WebformPrepopulateStorage
+   * @param \Drupal\webform_prepopulate\WebformPrepopulateStorage $webform_prepopulate_storage
    *   The Webform prepopulate storage.
    */
   public function __construct(WebformPrepopulateStorage $webform_prepopulate_storage) {

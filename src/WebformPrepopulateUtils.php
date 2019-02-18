@@ -56,8 +56,8 @@ class WebformPrepopulateUtils {
   /**
    * Checks the amount of hash access for a Webform within a session.
    *
-   * @param $hash
-   * @param $webform_id
+   * @param string $hash
+   * @param string $webform_id
    *
    * @return bool
    */

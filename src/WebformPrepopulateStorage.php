@@ -75,17 +75,20 @@ class WebformPrepopulateStorage {
    * @return string
    */
   public function mapDelimiterFromSettingValue($setting) {
+    $result = NULL;
     switch ($setting) {
       case 'semicolon':
-        return ';';
+        $result = ';';
+        break;
 
-      break;
       case 'comma':
       default:
-        return ',';
+        $result = ',';
 
-      break;
+        break;
     }
+
+    return $result;
   }
 
   /**
