@@ -132,8 +132,7 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
   $form['form_behaviors']['form_prepopulate_file']['form_prepopulate_file'] = [
     '#type' => 'managed_file',
     '#title' => t('Add or replace prepopulate data'),
-    // @todo check if private file system is configured properly or use tmp.
-    '#upload_location' => 'private://webform_prepopulate',
+    '#upload_location' => 'temporary://webform_prepopulate',
     '#upload_validators' => $validators,
     '#states' => [
       'visible' => [
@@ -146,7 +145,6 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
     ],
     '#weight' => ++$formPrepopulateWeight,
   ];
-  // @todo add option to set the delimiter, see schema csv_delimiter
 
   $form['#entity_builders'][] = '_webform_prepopulate_webform_settings_add_form_builder';
   $form['#validate'][] = '_webform_prepopulate_settings_validate';
