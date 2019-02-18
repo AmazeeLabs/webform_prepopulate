@@ -2,10 +2,10 @@
 
 namespace Drupal\webform_prepopulate;
 
+use Drupal\Core\TempStore\TempStoreException;
 use Drupal\Component\Utility\Xss;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\webform_prepopulate\WebformPrepopulateStorage;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
@@ -75,11 +75,11 @@ class WebformPrepopulateUtils {
     // Exclude bots, as they will use several sessions,
     // the tempStore is not useful here.
     $userAgent = Xss::filter(\Drupal::request()->headers->get('user-agent'));
-    if(
+    if (
       empty($userAgent) ||
       // @todo review bots list
       (!empty($userAgent) && preg_match('~(bot|crawl|python)~i', $userAgent))
-    ){
+    ) {
       \Drupal::logger('webform_prepopulate')->warning('Bot access blocked for user agent @agent.', [
         '@agent' => $userAgent,
       ]);
@@ -90,19 +90,19 @@ class WebformPrepopulateUtils {
     $tempStore = $this->tempstorePrivate->get('webform_prepopulate');
     $accessedHashes = [];
     try {
-      if (empty($tempStore->get('accessed_hashes_'. $webform_id))) {
+      if (empty($tempStore->get('accessed_hashes_' . $webform_id))) {
         $accessedHashes[] = $hash;
-        $tempStore->set('accessed_hashes_'. $webform_id, $accessedHashes);
+        $tempStore->set('accessed_hashes_' . $webform_id, $accessedHashes);
       }
       else {
-        $accessedHashes = $tempStore->get('accessed_hashes_'. $webform_id);
+        $accessedHashes = $tempStore->get('accessed_hashes_' . $webform_id);
         if (!in_array($hash, $accessedHashes)) {
           $accessedHashes[] = $hash;
-          $tempStore->set('accessed_hashes_'. $webform_id, $accessedHashes);
+          $tempStore->set('accessed_hashes_' . $webform_id, $accessedHashes);
         }
       }
     }
-    catch (\Drupal\Core\TempStore\TempStoreException $exception) {
+    catch (TempStoreException $exception) {
       \Drupal::logger('webform_prepopulate')->warning($exception->getMessage());
     }
 

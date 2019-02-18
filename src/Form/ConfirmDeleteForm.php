@@ -21,7 +21,7 @@ class ConfirmDeleteForm extends ConfirmFormBase {
   protected $webformPrepopulateStorage;
 
   /**
-   * Id of the Webformm
+   * Id of the Webform.
    *
    * @var string
    */

@@ -5,6 +5,8 @@
  * Contains webform_prepopulate.module.
  */
 
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\webform\Entity\Webform;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
@@ -105,7 +107,7 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
   $form['form_behaviors']['form_prepopulate_file']['csv_delimiter'] = [
     '#type' => 'radios',
     '#title' => t('CSV delimiter'),
-    '#options' => ['comma' => 'Comma (,)', 'semicolon' => 'Semicolon (;)',],
+    '#options' => ['comma' => 'Comma (,)', 'semicolon' => 'Semicolon (;)'],
     '#default_value' => isset($webformPrepopulateSettings['csv_delimiter']) ? $webformPrepopulateSettings['csv_delimiter'] : 'comma',
     '#states' => [
       'visible' => [
@@ -157,7 +159,7 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
  * @param array $form
  * @param \Drupal\Core\Form\FormStateInterface $form_state
  */
-function _webform_prepopulate_webform_settings_add_form_builder($entity_type, \Drupal\webform\Entity\Webform $webform, &$form, FormStateInterface $form_state) {
+function _webform_prepopulate_webform_settings_add_form_builder($entity_type, Webform $webform, &$form, FormStateInterface $form_state) {
   _webform_prepopulate_handle_third_party_setting('form_prepopulate_enable_file', 'form_prepopulate_enable_file', $webform, $form_state);
   _webform_prepopulate_handle_third_party_setting('disable_hash_access_limit', 'disable_hash_access_limit', $webform, $form_state);
   _webform_prepopulate_handle_third_party_setting('delete_data_on_webform_close', 'delete_data_on_webform_close', $webform, $form_state);
@@ -172,7 +174,7 @@ function _webform_prepopulate_webform_settings_add_form_builder($entity_type, \D
  * @param \Drupal\webform\Entity\Webform $webform
  * @param \Drupal\Core\Form\FormStateInterface $form_state
  */
-function _webform_prepopulate_handle_third_party_setting($setting, $form_key, \Drupal\webform\Entity\Webform $webform, FormStateInterface $form_state) {
+function _webform_prepopulate_handle_third_party_setting($setting, $form_key, Webform $webform, FormStateInterface $form_state) {
   if ($form_state->getValue($form_key)) {
     $webform->setThirdPartySetting('webform_prepopulate', $setting, $form_state->getValue($form_key));
   }
@@ -213,7 +215,7 @@ function _webform_prepopulate_settings_validate($form, FormStateInterface &$form
         $webformPrepopulateStorage->persistWebformDataFromFile($prepopulate_file[0], $webformEntity->id());
       }
     }
-    catch (\Drupal\Core\Entity\EntityStorageException $exception) {
+    catch (EntityStorageException $exception) {
       $form_state->setErrorByName('form_prepopulate_file', $exception->getMessage());
     }
   }
@@ -224,7 +226,7 @@ function _webform_prepopulate_settings_validate($form, FormStateInterface &$form
  *
  * Prepopulates the Webform if the conditions are met.
  */
-function webform_prepopulate_webform_submission_form_alter(array &$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+function webform_prepopulate_webform_submission_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
   /** @var \Drupal\webform_prepopulate\WebformPrepopulateUtils $utils */
   $utils = \Drupal::service('webform_prepopulate.utils');
   $hash = \Drupal::request()->query->get('hash');

@@ -102,7 +102,7 @@ class PrepopulateListForm extends FormBase {
     $header = [
       ['data' => $this->t('Hash'), 'field' => 'hash', 'sort' => 'asc'],
       ['data' => $this->t('Data'), 'field' => 'prepopulate_data'],
-      ['data' => $this->t('Imported'), 'field' => 'timestamp',],
+      ['data' => $this->t('Imported'), 'field' => 'timestamp'],
       ['data' => $this->t('Operations')],
     ];
 
@@ -129,7 +129,7 @@ class PrepopulateListForm extends FormBase {
       $rows[] = $row;
     }
 
-    $form['prepopulate_table']  = [
+    $form['prepopulate_table'] = [
       '#theme' => 'table',
       '#header' => $header,
       '#rows' => $rows,

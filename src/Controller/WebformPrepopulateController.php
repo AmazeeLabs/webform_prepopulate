@@ -2,6 +2,7 @@
 
 namespace Drupal\webform_prepopulate\Controller;
 
+use Drupal\webform_prepopulate\Form\PrepopulateListForm;
 use Drupal\Core\Url;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\webform\Entity\Webform;
@@ -21,9 +22,9 @@ class WebformPrepopulateController extends ControllerBase {
    */
   public function getDataOperations(Webform $webform) {
     // @todo check the mapping of the columns (elements could have been deleted after import)
-    $form_class = \Drupal\webform_prepopulate\Form\PrepopulateListForm::class;
+    $form_class = PrepopulateListForm::class;
     return [
-      'prepopulate_list_form' =>  \Drupal::formBuilder()->getForm($form_class),
+      'prepopulate_list_form' => \Drupal::formBuilder()->getForm($form_class),
       // 'Add or replace' button is provided by a local action.
       // So data manipulation actions are available
       // at the top and the bottom of the list.
@@ -33,7 +34,7 @@ class WebformPrepopulateController extends ControllerBase {
         '#attributes' => [
           'class' => ['button', 'button--danger'],
         ],
-        '#url' => Url::fromRoute('webform_prepopulate.delete_form', ['webform' => $webform->id()])
+        '#url' => Url::fromRoute('webform_prepopulate.delete_form', ['webform' => $webform->id()]),
       ],
     ];
   }

@@ -75,14 +75,16 @@ class WebformPrepopulateStorage {
    * @return string
    */
   public function mapDelimiterFromSettingValue($setting) {
-    switch($setting) {
+    switch ($setting) {
       case 'semicolon':
         return ';';
-        break;
+
+      break;
       case 'comma':
       default:
         return ',';
-        break;
+
+      break;
     }
   }
 
@@ -161,8 +163,8 @@ class WebformPrepopulateStorage {
     $result = [];
     /** @var \Generator $generator */
     $generator = $this->readFileByLines($file, 1);
-    if($headerLine = $generator->current()){
-       $result = explode($this->getDelimiter(), $headerLine);
+    if ($headerLine = $generator->current()) {
+      $result = explode($this->getDelimiter(), $headerLine);
     }
     return $result;
   }
@@ -178,13 +180,13 @@ class WebformPrepopulateStorage {
   private function readFileByLines(File $file, $limit = 0) {
     if (($handle = fopen($file->getFileUri(), 'rb')) !== FALSE) {
       if ($limit === 0) {
-        while(($line = fgets($handle)) !== FALSE) {
+        while (($line = fgets($handle)) !== FALSE) {
           yield rtrim($line, "\r\n");
         }
       }
       else {
         $countLine = 0;
-        while(($line = fgets($handle)) !== FALSE && $countLine < $limit) {
+        while (($line = fgets($handle)) !== FALSE && $countLine < $limit) {
           yield rtrim($line, "\r\n");
           ++$countLine;
         }
@@ -219,9 +221,9 @@ class WebformPrepopulateStorage {
     // Serialize with column keys / values.
     $inserted = 0;
     $lines = 0;
-    foreach($this->readFileByLines($file) as $line) {
+    foreach ($this->readFileByLines($file) as $line) {
       // @todo exclude header in a more elegant way.
-      if($lines > 0) {
+      if ($lines > 0) {
         $lineValues = explode($this->getDelimiter(), $line);
         $hash = $lineValues[$hashColumn];
         // Remove the hash from the column and values
@@ -234,7 +236,7 @@ class WebformPrepopulateStorage {
           $this->processPlainText(array_values($lineValues))
         );
         try {
-          if(
+          if (
             $this->connection->insert('webform_prepopulate')->fields([
               'webform_id' => $webform_id,
               'hash' => $hash,
@@ -301,7 +303,7 @@ class WebformPrepopulateStorage {
     }
     else {
       $count = 0;
-      while(count($header) > $count) {
+      while (count($header) > $count) {
         $result[$header[$count]] = $line_values[$count];
         ++$count;
       }
@@ -328,7 +330,8 @@ class WebformPrepopulateStorage {
 
     /** @var \Drupal\file\Entity\File $file */
     $file = $fileStorage->load($fid);
-    $file->setTemporary(); // check if this is useful.
+    // Check if this is useful.
+    $file->setTemporary();
 
     if (
       $this->validateWebformSchema($webform_id, $file) &&
@@ -360,7 +363,7 @@ class WebformPrepopulateStorage {
     $result = [];
     $query = $this->connection->select('webform_prepopulate', 'wp');
     $query->condition('wp.hash', $hash)
-          ->condition('wp.webform_id', $webform_id);
+      ->condition('wp.webform_id', $webform_id);
     $query->fields('wp', ['data']);
     $data = $query->execute()->fetchField();
     if ($data) {
@@ -398,7 +401,8 @@ class WebformPrepopulateStorage {
       ->extend('Drupal\Core\Database\Query\TableSortExtender')
       ->orderByHeader($header)
       ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-      ->limit(25) // @todo set limit.
+    // @todo set limit.
+      ->limit(25)
       ->fields('wp');
 
     if (!empty($search)) {
