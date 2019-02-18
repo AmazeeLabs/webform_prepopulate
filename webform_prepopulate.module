@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Entity\EntityStorageException;
+use Drupal\webform_prepopulate\WebformPrepopulateUtils;
 use Drupal\webform\Entity\Webform;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -94,7 +95,9 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
   $form['form_behaviors']['form_prepopulate_file']['disable_hash_access_limit'] = [
     '#type' => 'checkbox',
     '#title' => t('Disable access limit for prepopulating a Webform.'),
-    '#description' => t('This should be used for testing as anonymous only. Preferably use the <em>Bypass webform prepopulate hash access limit</em> permission for trusted roles.'),
+    '#description' => t('There is a limit to @hash_limit different prepopulate entries to avoid information disclosure. This should be used for testing as anonymous only. Preferably use the <em>Bypass webform prepopulate hash access limit</em> permission for trusted roles.', [
+      '@hash_limit' => WebformPrepopulateUtils::MAX_HASH_ACCESS,
+    ]),
     '#default_value' => isset($webformPrepopulateSettings['disable_hash_access_limit']) ? $webformPrepopulateSettings['disable_hash_access_limit'] : FALSE,
     '#states' => [
       'visible' => [
