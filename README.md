@@ -48,3 +48,10 @@ Prepopulate can be temporarily disabled by unchecking _Use a file to prepopulate
 ## Preview, test and delete prepopulate data.
 
 On the _Build_ tab, select _Prepopulate_. 
+
+## Roadmap
+
+- Add option to upload other formats (e.g. XLS)
+- Add option to create the hash and download the list
+- Configure token (default pre-populate override)
+- Check ways to include composite elements on a flat csv structure
