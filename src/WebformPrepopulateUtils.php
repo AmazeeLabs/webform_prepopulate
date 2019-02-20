@@ -7,6 +7,7 @@ use Drupal\Component\Utility\Xss;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\webform\Entity\Webform;
 
 /**
  * Class WebformPrepopulateUtils.
@@ -165,19 +166,13 @@ class WebformPrepopulateUtils {
    */
   public function getWebformSetting($setting, $webform_id) {
     $result = NULL;
-    try {
-      /** @var \Drupal\webform\Entity\Webform $webformEntity */
-      $webformEntity = $this->entityTypeManager->getStorage('webform')->load($webform_id);
-      if (
-        !empty($webformEntity) &&
-        !empty($settings = $webformEntity->getThirdPartySettings('webform_prepopulate')) &&
-        isset($settings[$setting])
-      ) {
-        $result = $settings[$setting];
-      }
-    }
-    catch (\Throwable $exception) {
-      \Drupal::logger('webform_prepopulate')->error($exception->getMessage());
+    $webformEntity = Webform::load($webform_id);
+    if (
+      !empty($webformEntity) &&
+      !empty($settings = $webformEntity->getThirdPartySettings('webform_prepopulate')) &&
+      isset($settings[$setting])
+    ) {
+      $result = $settings[$setting];
     }
     return $result;
   }
