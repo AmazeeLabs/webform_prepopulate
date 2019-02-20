@@ -110,8 +110,8 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
   $form['form_behaviors']['form_prepopulate_file']['csv_delimiter'] = [
     '#type' => 'radios',
     '#title' => t('CSV delimiter'),
-    '#options' => ['comma' => 'Comma (,)', 'semicolon' => 'Semicolon (;)'],
-    '#default_value' => isset($webformPrepopulateSettings['csv_delimiter']) ? $webformPrepopulateSettings['csv_delimiter'] : 'comma',
+    '#options' => [',' => 'Comma (,)', ';' => 'Semicolon (;)'],
+    '#default_value' => isset($webformPrepopulateSettings['csv_delimiter']) ? $webformPrepopulateSettings['csv_delimiter'] : ',',
     '#states' => [
       'visible' => [
         ':input[name="form_prepopulate_enable_file"]' => ['checked' => TRUE],
@@ -208,7 +208,7 @@ function _webform_prepopulate_settings_validate(array $form, FormStateInterface 
         $webformEntity = $formObject->getEntity();
         /** @var \Drupal\webform_prepopulate\WebformPrepopulateStorage $webformPrepopulateStorage */
         $webformPrepopulateStorage = \Drupal::service('webform_prepopulate.storage');
-        $delimiter = $webformPrepopulateStorage->mapDelimiterFromSettingValue($form_state->getValue('csv_delimiter'));
+        $delimiter = $form_state->getValue('csv_delimiter');
         $webformPrepopulateStorage->setDelimiter($delimiter);
         $webformPrepopulateStorage->persistWebformDataFromFile($prepopulate_file[0], $webformEntity->id());
       }
