@@ -10,8 +10,6 @@ use Drupal\webform_prepopulate\WebformPrepopulateUtils;
 use Drupal\webform\Entity\Webform;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
-use Drupal\Core\Link;
 
 /**
  * Implements hook_help().
@@ -51,6 +49,10 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
       '@link' => $webformPrepopulateStorage->getListFormLink($webformEntity->id()),
     ]);
   }
+
+  // A local action is used to point to the entity.webform.settings_form route.
+  // It is extended by the PrepopulateSettingsLocalAction plugin.
+  $form['form_behaviors']['form_prepopulate']['#prefix'] = '<a name="prepopulate"> </a>';
 
   $form['form_behaviors']['form_prepopulate_file'] = [
     '#type' => 'fieldset',
