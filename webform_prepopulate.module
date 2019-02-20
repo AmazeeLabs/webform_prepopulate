@@ -33,9 +33,9 @@ function webform_prepopulate_help($route_name, RouteMatchInterface $route_match)
  * Implements hook_form_FORM_ID_alter().
  */
 function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  /** @var \Drupal\Core\Entity\EntityFormInterface $webform_object */
+  /** @var \Drupal\Core\Entity\EntityFormInterface $formObject */
   $formObject = $form_state->getFormObject();
-  /** @var \Drupal\webform\Entity\Webform $webform_entity */
+  /** @var \Drupal\webform\Entity\Webform $webformEntity */
   $webformEntity = $formObject->getEntity();
   $webformPrepopulateSettings = $webformEntity->getThirdPartySettings('webform_prepopulate');
   $formPrepopulateWeight = (int) $form['form_behaviors']['form_prepopulate']['#weight'];
@@ -202,7 +202,7 @@ function _webform_prepopulate_settings_validate(array $form, FormStateInterface 
     try {
       $prepopulate_file = $form_state->getValue('form_prepopulate_file');
       if (isset($prepopulate_file[0]) && !empty($prepopulate_file[0])) {
-        /** @var \Drupal\Core\Entity\EntityFormInterface $webform_object */
+        /** @var \Drupal\Core\Entity\EntityFormInterface $formObject */
         $formObject = $form_state->getFormObject();
         /** @var \Drupal\webform\Entity\Webform $webformEntity */
         $webformEntity = $formObject->getEntity();

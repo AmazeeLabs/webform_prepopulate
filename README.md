@@ -51,7 +51,8 @@ On the _Build_ tab, select _Prepopulate_.
 
 ## Roadmap
 
-- Add option to upload other formats (e.g. XLS)
-- Add option to create the hash and download the list
+- Add option to upload other formats (e.g. xls)
+- Add option to create the hash from a column and download the list
 - Configure token (default pre-populate override)
 - Check ways to include composite elements on a flat csv structure
+- Improve PhpDoc

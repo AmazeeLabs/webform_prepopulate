@@ -84,7 +84,6 @@ class WebformPrepopulateStorage {
       case 'comma':
       default:
         $result = ',';
-
         break;
     }
 
@@ -391,9 +390,13 @@ class WebformPrepopulateStorage {
    * Returns the data associated to a Webform.
    *
    * @param string $webform_id
+   *   The Webform id.
    * @param array $header
+   *   Table header, used for ordering by the sort extender.
    * @param string string $search
+   *   Optional search string, currently applied to the hash only.
    * @param int $page_limit
+   *   Optional page limit, with default value.
    *
    * @return array
    */
