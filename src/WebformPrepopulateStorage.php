@@ -336,10 +336,8 @@ class WebformPrepopulateStorage {
       $this->validateWebformSchema($webform_id, $file) &&
       $this->saveFileData($webform_id, $file)
     ) {
-      $actionsUrl = Url::fromRoute('webform_prepopulate.prepopulate_list_form', ['webform' => $webform_id]);
-      $actionLink = Link::fromTextAndUrl($this->t('View and test imported data'), $actionsUrl)->toRenderable();
       \Drupal::messenger()->addMessage($this->t('The file has been saved to the database. @link.', [
-        '@link' => \Drupal::service('renderer')->renderRoot($actionLink),
+        '@link' => $this->getListFormLink($webform_id),
       ]));
     }
     else {
@@ -349,6 +347,19 @@ class WebformPrepopulateStorage {
     // Always delete the file.
     $file->delete();
   }
+
+  /**
+   * Returns a rendered link to the prepopulate list form.
+   *
+   * @param $webform_id
+   *
+   * @return string
+   */
+  public function getListFormLink($webform_id) {{
+    $url = Url::fromRoute('webform_prepopulate.prepopulate_list_form', ['webform' => $webform_id]);
+    $link = Link::fromTextAndUrl($this->t('View and test imported data'), $url)->toRenderable();
+    return \Drupal::service('renderer')->renderRoot($link);
+  }}
 
   /**
    * Returns the data associated to a hash for a Webform.

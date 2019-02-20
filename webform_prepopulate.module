@@ -46,11 +46,9 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
   // @todo add a link to the csv documentation.
   $entriesMessage = t('There are not prepopulate data available yet for this Webform, upload a csv file.');
   if (!empty($numberEntries)) {
-    $actionsUrl = Url::fromRoute('webform_prepopulate.prepopulate_list_form', ['webform' => $webformEntity->id()]);
-    $actionLink = Link::fromTextAndUrl(t('View and test imported data'), $actionsUrl)->toRenderable();
     $entriesMessage = t('There are %num_entries entries available for this Webform. @link.', [
       '%num_entries' => $numberEntries,
-      '@link' => \Drupal::service('renderer')->renderRoot($actionLink),
+      '@link' => $webformPrepopulateStorage->getListFormLink($webformEntity->id()),
     ]);
   }
 
