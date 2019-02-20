@@ -107,7 +107,7 @@ class PrepopulateListForm extends FormBase {
     ];
 
     $rows = [];
-    $results = $this->webformPrepopulateStorage->listData($this->webform->id(), $header, $search);
+    $results = $this->webformPrepopulateStorage->listData($this->webform->id(), $header, $search, 25);
     foreach ($results as $result) {
       $row = [];
       $row['hash'] = $result->hash;

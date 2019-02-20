@@ -391,18 +391,20 @@ class WebformPrepopulateStorage {
    * Returns the data associated to a Webform.
    *
    * @param string $webform_id
+   * @param array $header
+   * @param string string $search
+   * @param int $page_limit
    *
    * @return array
    */
-  public function listData($webform_id, $header, $search = '') {
+  public function listData($webform_id, $header, $search = '', $page_limit = 50) {
     $query = $this->connection
       ->select('webform_prepopulate', 'wp')
       ->condition('wp.webform_id', $webform_id)
       ->extend('Drupal\Core\Database\Query\TableSortExtender')
       ->orderByHeader($header)
       ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
-    // @todo set limit.
-      ->limit(25)
+      ->limit($page_limit)
       ->fields('wp');
 
     if (!empty($search)) {
