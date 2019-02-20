@@ -62,9 +62,9 @@ function webform_prepopulate_schema() {
       ],
     ],
     'primary key' => ['webform_id', 'hash'],
-    // @todo review indexes
     'indexes' => [
       'webform_id' => ['webform_id'],
+      'webform_id_hash' => ['webform_id', 'hash'],
     ],
   ];
   return $schema;
