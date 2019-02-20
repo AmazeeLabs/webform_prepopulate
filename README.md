@@ -37,7 +37,7 @@ Where
 
 ## Upload the file and configure the Webform
 
-- Choose a Webform: _Structure > Webbforms_
+- Choose a Webform: _Structure > Webforms_
 - Select the _Settings_ tab then _Form_
 - Under _Form behaviors > Prepopulate_ check _Allow all elements to be populated using query string parameters_
 - Check then _Use a file to prepopulate_ and upload the file.
