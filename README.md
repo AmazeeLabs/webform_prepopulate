@@ -26,10 +26,7 @@ The file should be `csv` and have the following structure:
 
 | hash                                                             | name          | email              |
 |------------------------------------------------------------------|---------------|--------------------|
-| d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35 | Jim Morrisson | jim@thedoors.com   |
-| 4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce | Ray Manzarek  | ray@thedoors.com   |
-| 4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a | Robby Krieger | robby@thedoors.com |
-| ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d | John Densmore | john@thedoors.com  |
+| d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35 | Marvin        | marvin@amazee.com  |
 
 Where 
 - `hash` is the relation with Drupal and the external system (e.g. Mailchimp)
