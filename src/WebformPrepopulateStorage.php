@@ -392,9 +392,9 @@ class WebformPrepopulateStorage {
     $query = $this->connection
       ->select('webform_prepopulate', 'wp')
       ->condition('wp.webform_id', $webform_id)
-      ->extend('Drupal\Core\Database\Query\TableSortExtender')
+      ->extend(\Drupal\Core\Database\Query\TableSortExtender::class)
       ->orderByHeader($header)
-      ->extend('Drupal\Core\Database\Query\PagerSelectExtender')
+      ->extend(\Drupal\Core\Database\Query\PagerSelectExtender::class)
       ->limit($page_limit)
       ->fields('wp');
 
