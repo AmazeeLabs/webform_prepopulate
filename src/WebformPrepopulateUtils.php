@@ -7,6 +7,9 @@ use Drupal\Component\Utility\Xss;
 use Drupal\Core\TempStore\PrivateTempStoreFactory;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Session\AccountProxyInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drupal\webform\Entity\Webform;
 
 /**
@@ -45,13 +48,45 @@ class WebformPrepopulateUtils {
   protected $entityTypeManager;
 
   /**
+   * Drupal\Core\Session\AccountProxyInterface definition.
+   *
+   * @var \Drupal\Core\Session\AccountProxyInterface
+   */
+  protected $currentUser;
+
+  /**
+   * Symfony\Component\HttpFoundation\RequestStack definition.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $requestStack;
+
+  /**
+   * Drupal\Core\Logger\LoggerChannelFactoryInterface definition.
+   *
+   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
+   */
+  protected $loggerFactory;
+
+  /**
    * Constructs a new WebformPrepopulateUtils object.
    */
-  public function __construct(PrivateTempStoreFactory $tempstore_private, ConfigFactoryInterface $config_factory, WebformPrepopulateStorage $webform_prepopulate_storage, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(
+    PrivateTempStoreFactory $tempstore_private,
+    ConfigFactoryInterface $config_factory,
+    WebformPrepopulateStorage $webform_prepopulate_storage,
+    EntityTypeManagerInterface $entity_type_manager,
+    AccountProxyInterface $current_user,
+    RequestStack $request_stack,
+    LoggerChannelFactoryInterface $logger_factory
+  ) {
     $this->tempstorePrivate = $tempstore_private;
     $this->configFactory = $config_factory;
     $this->webformPrepopulateStorage = $webform_prepopulate_storage;
     $this->entityTypeManager = $entity_type_manager;
+    $this->currentUser = $current_user;
+    $this->requestStack = $request_stack;
+    $this->loggerFactory = $logger_factory;
   }
 
   /**
@@ -64,7 +99,7 @@ class WebformPrepopulateUtils {
    */
   public function hasHashAccess($hash, $webform_id) {
     // Bypass by site wide permission.
-    if (\Drupal::currentUser()->hasPermission('bypass webform prepopulate hash access limit')) {
+    if ($this->currentUser->hasPermission('bypass webform prepopulate hash access limit')) {
       return TRUE;
     }
 
@@ -75,13 +110,13 @@ class WebformPrepopulateUtils {
 
     // Exclude bots, as they will use several sessions,
     // the tempStore is not useful here.
-    $userAgent = Xss::filter(\Drupal::request()->headers->get('user-agent'));
+    $userAgent = Xss::filter($this->requestStack->getCurrentRequest()->headers->get('user-agent'));
     if (
       empty($userAgent) ||
       // @todo review bots list
       (!empty($userAgent) && preg_match('~(bot|crawl|python)~i', $userAgent))
     ) {
-      \Drupal::logger('webform_prepopulate')->warning('Bot access blocked for user agent @agent.', [
+      $this->loggerFactory->get('webform_prepopulate')->warning('Bot access blocked for user agent @agent.', [
         '@agent' => $userAgent,
       ]);
       return FALSE;
@@ -104,14 +139,14 @@ class WebformPrepopulateUtils {
       }
     }
     catch (TempStoreException $exception) {
-      \Drupal::logger('webform_prepopulate')->warning($exception->getMessage());
+      $this->loggerFactory->get('webform_prepopulate')->warning($exception->getMessage());
     }
 
     $result = count($accessedHashes) <= self::MAX_HASH_ACCESS;
 
     if (!$result) {
-      \Drupal::logger('webform_prepopulate')->warning(t('Hash access limit reached for ip @ip.', [
-        '@ip' => \Drupal::request()->getClientIp(),
+      $this->loggerFactory->get('webform_prepopulate')->warning(t('Hash access limit reached for ip @ip.', [
+        '@ip' => $this->requestStack->getCurrentRequest()->getClientIp(),
       ]));
     }
 
@@ -129,7 +164,7 @@ class WebformPrepopulateUtils {
       $result = $this->entityTypeManager->getStorage('webform')->loadMultiple();
     }
     catch (\Throwable $exception) {
-      \Drupal::logger('webform_prepopulate')->error($exception->getMessage());
+      $this->loggerFactory->get('webform_prepopulate')->error($exception->getMessage());
     }
     return $result;
   }

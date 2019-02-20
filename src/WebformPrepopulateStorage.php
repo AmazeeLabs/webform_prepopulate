@@ -5,6 +5,9 @@ namespace Drupal\webform_prepopulate;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Core\Render\RendererInterface;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -34,6 +37,27 @@ class WebformPrepopulateStorage {
   protected $connection;
 
   /**
+   * Drupal\Core\Messenger\MessengerInterface definition.
+   *
+   * @var \Drupal\Core\Messenger\MessengerInterface
+   */
+  protected $messenger;
+
+  /**
+   * Drupal\Component\Datetime\TimeInterface definition.
+   *
+   * @var \Drupal\Component\Datetime\TimeInterface
+   */
+  protected $dateTime;
+
+  /**
+   * Drupal\Core\Render\RendererInterface definition.
+   *
+   * @var \Drupal\Core\Render\RendererInterface
+   */
+  protected $renderer;
+
+  /**
    * CSV delimiter.
    *
    * @var string
@@ -43,9 +67,18 @@ class WebformPrepopulateStorage {
   /**
    * Constructs a new WebformPrepopulateStorage object.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, Connection $connection) {
+  public function __construct(
+    EntityTypeManagerInterface $entity_type_manager,
+    Connection $connection,
+    MessengerInterface $messenger,
+    TimeInterface $date_time,
+    RendererInterface $renderer
+  ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->connection = $connection;
+    $this->messenger = $messenger;
+    $this->dateTime = $date_time;
+    $this->renderer = $renderer;
     $this->delimiter = ',';
   }
 
@@ -82,7 +115,7 @@ class WebformPrepopulateStorage {
     }
     catch (\Throwable $exception) {
       $result = FALSE;
-      \Drupal::messenger()->addError($exception->getMessage());
+      $this->messenger->addError($exception->getMessage());
     }
     return $result;
   }
@@ -124,7 +157,7 @@ class WebformPrepopulateStorage {
       $result = array_intersect($header, $webformElements);
     }
     catch (\Throwable $exception) {
-      \Drupal::messenger()->addError($exception->getMessage());
+      $this->messenger->addError($exception->getMessage());
     }
     return $result;
   }
@@ -190,7 +223,7 @@ class WebformPrepopulateStorage {
 
     // Fail if there is no hash column.
     if (!is_int($hashColumn)) {
-      \Drupal::messenger()->addError($this->t('Your file should have a <em>hash</em> column.'));
+      $this->messenger->addError($this->t('Your file should have a <em>hash</em> column.'));
       return FALSE;
     }
 
@@ -219,13 +252,13 @@ class WebformPrepopulateStorage {
             'webform_id' => $webform_id,
             'hash' => $hash,
             'data' => serialize($indexedLine),
-            'timestamp' => \Drupal::time()->getRequestTime(),
+            'timestamp' => $this->dateTime->getRequestTime(),
           ])->execute();
           ++$inserted;
         }
         catch (\Throwable $exception) {
           // This will allow to fail early in case of duplicate hash.
-          \Drupal::messenger()->addError($exception->getMessage());
+          $this->messenger->addError($exception->getMessage());
           return FALSE;
         }
       }
@@ -273,7 +306,7 @@ class WebformPrepopulateStorage {
         ++$count;
       }
       // And warn the user about this line.
-      \Drupal::messenger()->addWarning($this->t('The line @line does not match the header columns, it has still been imported but might lead to prepopulate issues.', [
+      $this->messenger->addWarning($this->t('The line @line does not match the header columns, it has still been imported but might lead to prepopulate issues.', [
         '@line' => implode($this->getDelimiter(), $line_values),
       ]));
     }
@@ -301,7 +334,7 @@ class WebformPrepopulateStorage {
       $fileStorage = $this->entityTypeManager->getStorage('file');
     }
     catch (\Throwable $exception) {
-      \Drupal::messenger()->addError($exception->getMessage());
+      $this->messenger->addError($exception->getMessage());
     }
 
     /** @var \Drupal\file\Entity\File $file */
@@ -313,12 +346,12 @@ class WebformPrepopulateStorage {
       $this->validateWebformSchema($webform_id, $file) &&
       $this->saveFileData($webform_id, $file)
     ) {
-      \Drupal::messenger()->addMessage($this->t('The file has been saved to the database. @link.', [
+      $this->messenger->addMessage($this->t('The file has been saved to the database. @link.', [
         '@link' => $this->getListFormLink($webform_id),
       ]));
     }
     else {
-      \Drupal::messenger()->addError($this->t('There was and error while saving the prepopulate file into the database.'));
+      $this->messenger->addError($this->t('There was and error while saving the prepopulate file into the database.'));
     }
 
     // Always delete the file.
@@ -335,7 +368,7 @@ class WebformPrepopulateStorage {
   public function getListFormLink($webform_id) {{
     $url = Url::fromRoute('webform_prepopulate.prepopulate_list_form', ['webform' => $webform_id]);
     $link = Link::fromTextAndUrl($this->t('View and test imported data'), $url)->toRenderable();
-    return \Drupal::service('renderer')->renderRoot($link);
+    return $this->renderer->renderRoot($link);
   }}
 
   /**
