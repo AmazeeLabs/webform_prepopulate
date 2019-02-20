@@ -10,5 +10,7 @@
     "issues": "https://www.drupal.org/project/issues/webform_prepopulate",
     "source": "http://cgit.drupalcode.org/webform_prepopulate"
   },
-  "require": { }
+  "require": {
+    "drupal/webform": "~5.1"
+  }
 }
