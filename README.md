@@ -49,6 +49,7 @@ On the _Build_ tab, select _Prepopulate_.
 ## Roadmap
 
 - Add option to upload other formats (e.g. xls)
+- Add batch import
 - Add option to create the hash from a column and download the list
 - Configure token (default pre-populate override)
 - Check ways to include composite elements on a flat csv structure

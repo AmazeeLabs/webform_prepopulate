@@ -152,7 +152,7 @@ class PrepopulateListForm extends FormBase {
       $result = $this->t('There are no prepopulate data matching this hash.');
     }
     else {
-      $uploadUrl = Url::fromRoute('entity.webform.settings_form', ['webform' => $this->webform->id()]);
+      $uploadUrl = Url::fromRoute('entity.webform.settings_form', ['webform' => $this->webform->id()], ['fragment' => 'prepopulate']);
       $uploadLink = Link::fromTextAndUrl($this->t('Upload a file'), $uploadUrl)->toRenderable();
       $result = $this->t('There are no prepopulate data yet. @link.', [
         '@link' => \Drupal::service('renderer')->renderRoot($uploadLink),
