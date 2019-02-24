@@ -4,5 +4,5 @@ description: 'Pre-populate a Webform with an external data source without disclo
 core: 8.x
 package: 'Webform'
 dependencies:
-  - webform
-  - webform_ui
+  - webform:webform
+  - webform:webform_ui

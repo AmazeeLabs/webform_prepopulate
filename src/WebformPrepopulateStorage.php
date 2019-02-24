@@ -2,6 +2,8 @@
 
 namespace Drupal\webform_prepopulate;
 
+use Drupal\Core\Database\Query\PagerSelectExtender;
+use Drupal\Core\Database\Query\TableSortExtender;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Database\Connection;
@@ -365,11 +367,13 @@ class WebformPrepopulateStorage {
    *
    * @return string
    */
-  public function getListFormLink($webform_id) {{
+  public function getListFormLink($webform_id) {
+    {
     $url = Url::fromRoute('webform_prepopulate.prepopulate_list_form', ['webform' => $webform_id]);
     $link = Link::fromTextAndUrl($this->t('View and test imported data'), $url)->toRenderable();
     return $this->renderer->renderRoot($link);
-  }}
+    }
+  }
 
   /**
    * Returns the data associated to a hash for a Webform.
@@ -425,9 +429,9 @@ class WebformPrepopulateStorage {
     $query = $this->connection
       ->select('webform_prepopulate', 'wp')
       ->condition('wp.webform_id', $webform_id)
-      ->extend(\Drupal\Core\Database\Query\TableSortExtender::class)
+      ->extend(TableSortExtender::class)
       ->orderByHeader($header)
-      ->extend(\Drupal\Core\Database\Query\PagerSelectExtender::class)
+      ->extend(PagerSelectExtender::class)
       ->limit($page_limit)
       ->fields('wp');
 
