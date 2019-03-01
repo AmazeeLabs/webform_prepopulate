@@ -110,7 +110,7 @@ function webform_prepopulate_form_webform_settings_form_form_alter(&$form, FormS
   $form['form_behaviors']['form_prepopulate_file']['csv_delimiter'] = [
     '#type' => 'radios',
     '#title' => t('CSV delimiter'),
-    '#options' => [',' => 'Comma (,)', ';' => 'Semicolon (;)'],
+    '#options' => [',' => 'Comma (,)', ';' => 'Semicolon (;)', '|' => 'Pipe (|)'],
     '#default_value' => isset($webformPrepopulateSettings['csv_delimiter']) ? $webformPrepopulateSettings['csv_delimiter'] : ',',
     '#states' => [
       'visible' => [
