@@ -280,7 +280,14 @@ class WebformPrepopulateStorage {
   private function processPlainText(array $values) {
     $result = [];
     foreach ($values as $value) {
-      // Multibyte trim.
+      // UTF-8 convert.
+      if(
+        !mb_check_encoding($value, 'UTF-8')
+        || !($value === mb_convert_encoding(mb_convert_encoding($value, 'UTF-32', 'UTF-8'), 'UTF-8', 'UTF-32'))
+      ) {
+        $value = mb_convert_encoding($value, 'UTF-8', 'pass');
+      }
+      // Multi byte trim.
       $value = preg_replace('/(^\s+)|(\s+$)/us', '', $value);
       $result[] = Html::escape($value);
     }
@@ -368,11 +375,9 @@ class WebformPrepopulateStorage {
    * @return string
    */
   public function getListFormLink($webform_id) {
-    {
     $url = Url::fromRoute('webform_prepopulate.prepopulate_list_form', ['webform' => $webform_id]);
     $link = Link::fromTextAndUrl($this->t('View and test imported data'), $url)->toRenderable();
     return $this->renderer->renderRoot($link);
-    }
   }
 
   /**
