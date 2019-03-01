@@ -11,6 +11,7 @@
     "source": "http://cgit.drupalcode.org/webform_prepopulate"
   },
   "require": {
+    "ext-mbstring": "*",
     "drupal/webform": "~5.1"
   }
 }
