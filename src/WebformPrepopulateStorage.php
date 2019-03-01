@@ -178,7 +178,7 @@ class WebformPrepopulateStorage {
     /** @var \Generator $generator */
     $generator = $this->readFileByLines($file, 1);
     if ($headerLine = $generator->current()) {
-      $result = explode($this->getDelimiter(), $headerLine);
+      $result = str_getcsv($headerLine, $this->getDelimiter());
     }
     return $result;
   }
@@ -238,7 +238,7 @@ class WebformPrepopulateStorage {
     foreach ($this->readFileByLines($file) as $line) {
       // @todo exclude header in a more elegant way.
       if ($lines > 0) {
-        $lineValues = explode($this->getDelimiter(), $line);
+        $lineValues = str_getcsv($line, $this->getDelimiter());
         $hash = $lineValues[$hashColumn];
         // Remove the hash from the column and values
         // it does not need to be stored with the other serialized values.
@@ -281,7 +281,7 @@ class WebformPrepopulateStorage {
     $result = [];
     foreach ($values as $value) {
       // UTF-8 convert.
-      if(
+      if (
         !mb_check_encoding($value, 'UTF-8')
         || !($value === mb_convert_encoding(mb_convert_encoding($value, 'UTF-32', 'UTF-8'), 'UTF-8', 'UTF-32'))
       ) {
@@ -346,8 +346,13 @@ class WebformPrepopulateStorage {
       // Check if this is useful.
       $file->setTemporary();
 
+      $validSchema = $this->validateWebformSchema($webform_id, $file);
+      if (!$validSchema) {
+        $this->messenger->addError($this->t('The Webform element keys are not matching at least one CSV column.'));
+      }
+
       if (
-        $this->validateWebformSchema($webform_id, $file) &&
+        $validSchema &&
         $this->saveFileData($webform_id, $file)
       ) {
         $this->messenger->addMessage($this->t('The file has been saved to the database. @link.', [
