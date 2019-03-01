@@ -341,30 +341,29 @@ class WebformPrepopulateStorage {
     try {
       /** @var \Drupal\file\FileStorageInterface $fileStorage */
       $fileStorage = $this->entityTypeManager->getStorage('file');
+      /** @var \Drupal\file\Entity\File $file */
+      $file = $fileStorage->load($fid);
+      // Check if this is useful.
+      $file->setTemporary();
+
+      if (
+        $this->validateWebformSchema($webform_id, $file) &&
+        $this->saveFileData($webform_id, $file)
+      ) {
+        $this->messenger->addMessage($this->t('The file has been saved to the database. @link.', [
+          '@link' => $this->getListFormLink($webform_id),
+        ]));
+      }
+      else {
+        $this->messenger->addError($this->t('There was and error while saving the prepopulate file into the database.'));
+      }
+
+      // Always delete the file.
+      $file->delete();
     }
     catch (\Throwable $exception) {
       $this->messenger->addError($exception->getMessage());
     }
-
-    /** @var \Drupal\file\Entity\File $file */
-    $file = $fileStorage->load($fid);
-    // Check if this is useful.
-    $file->setTemporary();
-
-    if (
-      $this->validateWebformSchema($webform_id, $file) &&
-      $this->saveFileData($webform_id, $file)
-    ) {
-      $this->messenger->addMessage($this->t('The file has been saved to the database. @link.', [
-        '@link' => $this->getListFormLink($webform_id),
-      ]));
-    }
-    else {
-      $this->messenger->addError($this->t('There was and error while saving the prepopulate file into the database.'));
-    }
-
-    // Always delete the file.
-    $file->delete();
   }
 
   /**
